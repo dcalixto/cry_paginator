@@ -83,7 +83,7 @@ module Paginator
 
     # Ensure the including class defines a table_name method
     def self.table_name
-      @table_name ||= "#{self.name.split("::").last.underscore}s"
+      @@table_name ||= "#{self.name.split("::").last.underscore}s"
     end
   end
 
