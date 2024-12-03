@@ -9,7 +9,7 @@ module Paginator
       classes << "is-disabled" if disabled
       classes << extra_classes unless extra_classes.empty?
 
-      "<a href=\"#{page ? "?page=#{page}" : "#"}\" class=\"#{classes.join(" ")}\">#{text}</a>"
+      "<a href=\"#{page ? "?page=#{page}" : "#end"}\" class=\"#{classes.join(" ")}\">#{text}</a>"
     end
 
     # Generate navigation links for pagination

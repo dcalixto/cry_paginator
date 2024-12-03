@@ -65,13 +65,21 @@ module Paginator
       order_by: "created_at DESC",
     }
 
+    def self.config
+      @@default_config
+    end
+
+    def self.config=(new_config : Hash(Symbol, _))
+      @@default_config.merge!(new_config)
+    end
+
     # Dynamically inject the paginate method into any class that includes Paginator
     # Add class getter/setter for database connection
     class_property db : DB::Database? = nil
 
     macro included
-      def self.paginate(page : Int32, per_page : Int32 = @@default_config[:per_page],
-                        order_by : String = @@default_config[:order_by],
+      def self.paginate(page : Int32, per_page : Int32 = Paginator.config[:per_page],
+                        order_by : String = Paginator.config[:order_by],
                         where : String? = nil)
         raise ArgumentError.new("Page must be >= 1") if page < 1
         offset = (page - 1) * per_page
@@ -86,7 +94,7 @@ module Paginator
         count_query << "WHERE #{where}" if where
         total = Paginator.db.scalar(count_query.join(" ")).as(Int64)
 
-        Page(self).new(
+        Paginator::Page(self).new(
           items: items,
           total: total,
           current_page: page,
@@ -99,14 +107,14 @@ module Paginator
         @@table_name ||= "#{self.name.split("::").last.underscore}s"
       end
 
-      # Allow global configuration of Paginator
-      def self.config
-        @@default_config
-      end
+      # # Allow global configuration of Paginator
+      # def self.config
+      #   @@default_config
+      # end
 
-      def self.config=(new_config : Hash(Symbol, _))
-        @@default_config.merge!(new_config)
-      end
+      # def self.config=(new_config : Hash(Symbol, _))
+      #   @@default_config.merge!(new_config)
+      # end
     end
   end
 end
