@@ -8,11 +8,11 @@ module Paginator
       classes << "is-current" if current
       classes << "is-disabled" if disabled
       classes << extra_classes unless extra_classes.empty?
-      
+
       "<a href=\"#{page ? "?page=#{page}" : "#"}\" class=\"#{classes.join(" ")}\">#{text}</a>"
     end
   end
-end
+
   # Generate navigation links for pagination
   def pagination_nav(paginator : Paginator::Page, base_url : String = "/", extra_classes = "")
     nav_classes = ["pagination-nav", extra_classes].join(" ")
