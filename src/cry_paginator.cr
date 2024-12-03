@@ -1,18 +1,19 @@
 require "./view_helper"
 
 module Paginator
-  # Class variable for DB connection
-  @@db : DB::Database? = nil
+ # Make database connection non-nullable
+ @@db : DB::Database = DB.open("sqlite3:./db/development.db")
 
-  # Add connection setter
-  def self.db=(connection : DB::Database)
-    @@db = connection
-  end
+ # Add a class method to access the database
+ def self.db
+   @@db
+ end
 
-  # Add connection getter with nil check
-  def self.db
-    @@db || raise "Database connection not initialized. Call Paginator.db = your_connection first"
-  end
+ # Add a setter for the database connection
+ def self.db=(connection : DB::Database)
+   @@db = connection
+ end
+
 
   # Holds paginated data and metadata
   class Page(T)
@@ -67,8 +68,10 @@ module Paginator
   }
 
   # Dynamically inject the paginate method into any class that includes Paginator
-  macro included
-    # Adds a paginate method dynamically to the including class
+   # Add class getter/setter for database connection
+   class_property db : DB::Database? = nil
+
+   macro included
     def self.paginate(page : Int32, per_page : Int32 = @@default_config[:per_page],
                       order_by : String = @@default_config[:order_by],
                       where : String? = nil)
@@ -80,11 +83,10 @@ module Paginator
       query << "ORDER BY #{order_by}"
       query << "LIMIT ? OFFSET ?"
 
-      items = @@db.query_all(query.join(" "), args: [per_page, offset], as: self)
-
+      items = Paginator.db.query_all(query.join(" "), args: [per_page, offset], as: self)
       count_query = ["SELECT COUNT(*) FROM #{table_name}"]
       count_query << "WHERE #{where}" if where
-      total = @@db.scalar(count_query.join(" ")).as(Int64)
+      total = Paginator.db.scalar(count_query.join(" ")).as(Int64)
 
       Page(self).new(
         items: items,
@@ -93,7 +95,7 @@ module Paginator
         per_page: per_page
       )
     end
-
+  end
     # Ensure the including class defines a table_name method
     def self.table_name
       @@table_name ||= "#{self.name.split("::").last.underscore}s"
