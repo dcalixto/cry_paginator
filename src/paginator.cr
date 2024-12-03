@@ -1,3 +1,5 @@
+require "./view_helper"
+
 module Paginator
   # Holds paginated data and metadata
   class Page(T)
