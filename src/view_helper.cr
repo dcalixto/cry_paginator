@@ -1,23 +1,18 @@
-module Paginator::ViewHelper
-  PAGE_TOKEN = "__page__"
+module Paginator
+  module ViewHelper
+    PAGE_TOKEN = "__page__"
 
-  # Generate a link with the given page and text
-  def pagination_link(page : Int32 | Nil, text : String, current: false, disabled: false, extra_classes = "")
-    classes = [] of String
-    classes << "pagination-link"
-    classes << "current" if current
-    classes << "disabled" if disabled
-    classes.concat(extra_classes.split)
-
-    href = page.nil? || disabled ? "#" : "?page=#{page}"
-
-    <<-HTML
-    <a href="#{href}" class="#{classes.join(" ")}" #{"aria-current='page'" if current}>
-      #{text}
-    </a>
-    HTML
+    # Generates pagination link HTML
+    def pagination_link(page : Int32 | Nil, text : String, current : Bool = false, disabled : Bool = false, extra_classes : String = "")
+      classes = ["pagination-link"]
+      classes << "is-current" if current
+      classes << "is-disabled" if disabled
+      classes << extra_classes unless extra_classes.empty?
+      
+      "<a href=\"#{page ? "?page=#{page}" : "#"}\" class=\"#{classes.join(" ")}\">#{text}</a>"
+    end
   end
-
+end
   # Generate navigation links for pagination
   def pagination_nav(paginator : Paginator::Page, base_url : String = "/", extra_classes = "")
     nav_classes = ["pagination-nav", extra_classes].join(" ")
