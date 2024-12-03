@@ -53,13 +53,15 @@ module Paginator
     order_by: "created_at DESC",
   }
 
+  # Dynamically inject the paginate method into any class that includes Paginator
   macro included
-    # Paginate a dataset based on parameters
+    # Adds a paginate method dynamically to the including class
     def self.paginate(page : Int32, per_page : Int32 = @@default_config[:per_page],
                       order_by : String = @@default_config[:order_by],
                       where : String? = nil)
       raise ArgumentError.new("Page must be >= 1") if page < 1
       offset = (page - 1) * per_page
+
       query = ["SELECT * FROM #{table_name}"]
       query << "WHERE #{where}" if where
       query << "ORDER BY #{order_by}"
@@ -77,6 +79,11 @@ module Paginator
         current_page: page,
         per_page: per_page
       )
+    end
+
+    # Ensure the including class defines a table_name method
+    def self.table_name
+      @table_name ||= "#{self.name.split("::").last.underscore}s"
     end
   end
 
