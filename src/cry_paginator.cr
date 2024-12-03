@@ -1,6 +1,19 @@
 require "./view_helper"
 
 module Paginator
+  # Class variable for DB connection
+  @@db : DB::Database? = nil
+
+  # Add connection setter
+  def self.db=(connection : DB::Database)
+    @@db = connection
+  end
+
+  # Add connection getter with nil check
+  def self.db
+    @@db || raise "Database connection not initialized. Call Paginator.db = your_connection first"
+  end
+
   # Holds paginated data and metadata
   class Page(T)
     getter items : Array(T)
