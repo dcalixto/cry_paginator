@@ -96,7 +96,7 @@ puts page.page_window # Example output: [1, :gap, 8, 9, 10, :gap, 36]
 
 The controller retrieves paginated data from the database using the Paginator shard.
 
-**Example: ArticlesController (Kemal Framework)**
+_Example: ArticlesController (Kemal Framework)_
 
 ```crystal
 require "./models/article" # Assuming Article includes Paginator
@@ -120,15 +120,14 @@ end
 
 Use the data provided by the controller to render paginated content and navigation links.
 
-**Example Usage in a Kemal View (index.ecr)**
+_Example Usage in a Kemal View (index.ecr)_
 
 ```crystal
 <%= pagination_nav(paginator) %>
 <%= pagination_info(paginator, "articles") %>
 ```
 
-**Example Output**
-
+_Example Output_
 Navigation Links
 
 ```crystal
@@ -192,12 +191,13 @@ Add some simple CSS to style the pagination links.
 
 Use spectator to write tests:
 
-**spec/paginator_spec.cr**
+_spec/paginator_spec.cr_
 
+```crystal
 require "spec"
 require "../src/paginator"
 
-```crystal
+
 describe Paginator do
   it "returns paginated data" do
     # Test logic here
