@@ -30,14 +30,16 @@ Then, run shards install.
 - To enable pagination on a model, include the Paginator module in your model class:
 
 ```crystal
-require "paginator"
+require "cry_paginator"
 
 class Article
   include Paginator
+  # Define your database connection
+  @@db : DB::Database = DB.open("your_database_url")
 
-  # Mock table name for demonstration
-  def self.table_name
-    "articles"
+# Add a class method to access the database
+  def self.db
+    @@db
   end
 end
 ```
@@ -47,23 +49,16 @@ end
 Use the paginate method to fetch paginated records:
 
 ```crystal
-# Database setup
-DB = DB.open("sqlite3://db.sqlite3")
-
-# Paginate articles
-page = Article.paginate(page: 1, per_page: 10)
-
-puts page.items         # Array of fetched articles
-puts page.total         # Total number of articles
-puts page.current_page  # Current page
-puts page.total_pages   # Total number of pages
-
-# Navigation
-puts page.next_page     # Next page number or nil
-puts page.prev_page     # Previous page number or nil
+# Access pagination data
+paginator.items          # Current page items
+paginator.total          # Total number of items
+paginator.total_pages    # Total number of pages
+paginator.current_page   # Current page number
+paginator.next_page      # Next page number or nil
+paginator.prev_page      # Previous page number or nil
 
 # Custom Page Window
-puts page.page_window(7) # Example output: [1, :gap, 5, 6, 7, 8, :gap, 20]
+paginator.page_window(7) # Example output: [1, :gap, 5, 6, 7, 8, :gap, 20]
 
 ```
 
@@ -101,18 +96,26 @@ _Example: ArticlesController (Kemal Framework)_
 ```crystal
 require "./models/article" # Assuming Article includes Paginator
 
+
 class ArticlesController
-  def self.index(env)
-    page = env.params.query["page"]? || 1
-    per_page = 10
+    include Paginator::ViewHelper
 
-    articles_page = Article.paginate(page.to_i, per_page: per_page)
+    @@db : DB::Database = Article.db # Add the database type annotation on Application.cr or in the controller
+    @articles : Array(Article)?
+    @paginator : Paginator::Page(Article)
 
-    env.render("articles/index.ecr", {
-      articles: articles_page.items,
-      paginator: articles_page
-    })
+  def initialize
+    @paginator = Article.paginate(Article.db, 1, 10)
   end
+
+  def index(env)
+     page = env.params.query["page"]?.try(&.to_i) || 1
+     per_page = env.params.query["per_page"]?.try(&.to_i) || 10
+     paginator = Article.paginate(Article.db, page, per_page)
+     @articles = @paginator.items
+
+     render "src/views/articles/index.ecr"
+   end
 end
 ```
 
@@ -123,8 +126,9 @@ Use the data provided by the controller to render paginated content and navigati
 _Example Usage in a Kemal View (index.ecr)_
 
 ```crystal
-<%= pagination_nav(paginator) %>
-<%= pagination_info(paginator, "articles") %>
+<%= pagination_info(paginator, "articles") if paginator %>
+<%= pagination_nav(paginator) if paginator %>
+
 ```
 
 _Example Output_
@@ -159,23 +163,24 @@ Add some simple CSS to style the pagination links.
   display: flex;
   gap: 0.5rem;
   list-style: none;
+  margin-bottom: 13rem;
 }
 
 .pagination-link {
   padding: 0.5rem 1rem;
-  background: #007bff;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 3px;
-}
 
-.pagination-link.current {
-  background: #0056b3;
+  color: #1eaedb;
+
+  text-decoration: none;
+}
+.pagination-link:hover {
+  text-decoration: underline;
+}
+.is-current {
   font-weight: bold;
 }
 
-.pagination-link.disabled {
-  background: #ddd;
+.is-disabled {
   color: #aaa;
   pointer-events: none;
 }
