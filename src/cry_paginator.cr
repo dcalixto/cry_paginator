@@ -47,7 +47,6 @@ module Paginator
       half = size // 2
       start_page = [current_page - half, 1].max
       end_page = [current_page + half, total_pages].min
-
       if total_pages > size
         window = [1, gap_symbol] if start_page > 2
         window ||= [] of Int32 | Symbol
@@ -74,12 +73,8 @@ module Paginator
     @@default_config.merge!(new_config)
   end
 
-  # Dynamically inject the paginate method into any class that includes Paginator
-  # Add class getter/setter for database connection
-  class_property db : DB::Database? = nil
-
   macro included
-    def self.paginate(page : Int32, per_page : Int32 = Paginator.config[:per_page],
+    def self.paginate(db : DB::Database, page : Int32, per_page : Int32 = Paginator.config[:per_page],
                       order_by : String = Paginator.config[:order_by],
                       where : String? = nil)
       raise ArgumentError.new("Page must be >= 1") if page < 1
@@ -90,10 +85,10 @@ module Paginator
       query << "ORDER BY #{order_by}"
       query << "LIMIT ? OFFSET ?"
 
-      items = Paginator.db.query_all(query.join(" "), args: [per_page, offset], as: self)
+      items = db.query_all(query.join(" "), args: [per_page, offset], as: self)
       count_query = ["SELECT COUNT(*) FROM #{table_name}"]
       count_query << "WHERE #{where}" if where
-      total = Paginator.db.scalar(count_query.join(" ")).as(Int64)
+      total = db.scalar(count_query.join(" ")).as(Int64)
 
       Paginator::Page(self).new(
         items: items,
