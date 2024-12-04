@@ -1,5 +1,5 @@
-require "./view_helper"
 require "./backend"
+require "./view_helper"
 
 module Paginator
   # Make database connection non-nullable
