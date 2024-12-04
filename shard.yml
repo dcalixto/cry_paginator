@@ -6,10 +6,11 @@ authors:
 
 description: |
   A simple, flexible, and high-performance pagination library for Crystal inspired by Ruby's Pagy gem.
-
-#dependencies:
-#  stumpy_png:
-#    github: stumpycr/stumpy_png
+dependencies:
+  db:
+    github: crystal-lang/crystal-db
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
 development_dependencies:
   spectator:
     github: icy-arctic-fox/spectator
