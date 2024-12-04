@@ -2,15 +2,13 @@ require "./backend"
 require "./view_helper"
 
 module Paginator
-  # Make database connection non-nullable
-  @@db : DB::Database = DB.open("sqlite3:./db/development.db")
+  # Remove the hardcoded DB initialization
+  @@db : DB::Database? = nil
 
-  # Add a class method to access the database
   def self.db
-    @@db
+    @@db || raise "Database connection not set. Call Paginator.db = your_database_connection first"
   end
 
-  # Add a setter for the database connection
   def self.db=(connection : DB::Database)
     @@db = connection
   end
