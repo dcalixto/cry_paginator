@@ -1,0 +1,15 @@
+language: crystal
+
+# Specify supported versions of Crystal
+crystal:
+  - latest
+  - nightly
+
+# Cache dependencies to speed up builds
+cache:
+  shards: true
+
+# Install dependencies and run tests
+script:
+  - shards install
+  - crystal spec
