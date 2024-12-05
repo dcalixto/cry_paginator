@@ -82,7 +82,7 @@ module Paginator
       query = ["SELECT * FROM #{table_name}"]
       query << "WHERE #{where}" if where
       query << "ORDER BY #{order_by}"
-      query << "LIMIT ? OFFSET ?"
+      query << "LIMIT $1 OFFSET $2"
 
       items = db.query_all(query.join(" "), args: [per_page, offset], as: self)
       count_query = ["SELECT COUNT(*) FROM #{table_name}"]

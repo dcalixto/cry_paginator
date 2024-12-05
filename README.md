@@ -2,6 +2,8 @@
 
 A simple, flexible, and high-performance pagination library for Crystal inspired by Ruby's Pagy gem.
 
+[![Build Status](https://travis-ci.com/<your-username>/<your-repo>.svg?branch=main)](https://travis-ci.com/<your-username>/<your-repo>)
+
 ## Features
 
 - Lightweight and fast

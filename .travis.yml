@@ -13,3 +13,4 @@ cache:
 script:
   - shards install
   - crystal spec
+  - coveralls
