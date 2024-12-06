@@ -4,8 +4,8 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Cloning the repository
-                git url: 'https://github.com/dcalixto/cry_paginator.git', branch: 'main'
+                git url: 'https://github.com/dcalixto/cry_paginator.git',
+                    branch: 'master'  // Changed to master
             }
         }
 
