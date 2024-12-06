@@ -1,39 +1,49 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'crystallang/crystal'
+        }
+    }
+
+    environment {
+        DATABASE_URL = 'sqlite3://db.sqlite3'
+    }
 
     stages {
         stage('Clone Repository') {
             steps {
                 git url: 'https://github.com/dcalixto/cry_paginator.git',
-                    branch: 'master'  // Changed to master
+                    branch: 'master'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                // Installing dependencies
                 sh 'shards install'
             }
         }
 
         stage('Run Tests') {
             steps {
-                // Running tests
                 sh 'crystal spec'
             }
         }
 
         stage('Lint Code') {
             steps {
-                // Linting code
                 sh 'crystal tool format --check'
+            }
+        }
+
+        stage('Static Analysis') {
+            steps {
+                sh 'ameba'
             }
         }
     }
 
     post {
         always {
-            // Archiving results or logs if needed
             archiveArtifacts artifacts: '**/log/*', allowEmptyArchive: true
         }
         success {
