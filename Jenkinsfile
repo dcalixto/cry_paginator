@@ -1,11 +1,6 @@
 pipeline {
-    agent {
-        docker {
-            image 'crystallang/crystal:latest'
-           // args '-v $HOME/.cache:/root/.cache'
-        }
-    }
-
+   agent any
+   
     environment {
         DATABASE_URL = 'sqlite3://db.sqlite3'
     }
