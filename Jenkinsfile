@@ -8,27 +8,39 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
+                sh 'rm -rf *' // Clean workspace first
                 git url: 'https://github.com/dcalixto/cry_paginator.git',
                     branch: 'master'
+                sh 'ls -la' // Verify contents after clone
             }
         }
 
         stage('Debug Workspace') {
             steps {
-                sh 'pwd'
-                sh 'ls -la'
-                sh 'docker run --rm -v "$WORKSPACE":/app -w /app crystallang/crystal ls -la'
+                sh '''
+                    echo "Workspace contents:"
+                    ls -la
+                    echo "Current user:"
+                    whoami
+                    echo "Workspace permissions:"
+                    stat $WORKSPACE
+                '''
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    docker run --rm -v "$WORKSPACE":/app -w /app crystallang/crystal /bin/sh -c '
+                    docker run --rm -v "$WORKSPACE":/app -w /app crystallang/crystal /bin/sh -c "
                         ls -la
-                        test -f shard.yml && echo "shard.yml exists" || echo "shard.yml missing"
-                        shards install
-                    '
+                        if [ -f shard.yml ]; then
+                            echo 'shard.yml exists'
+                            shards install
+                        else
+                            echo 'shard.yml missing'
+                            exit 1
+                        fi
+                    "
                 '''
             }
         }
