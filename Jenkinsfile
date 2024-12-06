@@ -8,13 +8,16 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                sh 'rm -rf *' // Clean workspace first
-                git url: 'https://github.com/dcalixto/cry_paginator.git',
-                    branch: 'master'
-                sh 'ls -la' // Verify contents after clone
+                sh '''
+                echo "Cleaning workspace..."
+                rm -rf *
+                echo "Cloning repository..."
+                git clone --branch master https://github.com/dcalixto/cry_paginator.git .
+                echo "Workspace contents after cloning:"
+                ls -la
+                '''
             }
         }
-
         stage('Debug Workspace') {
             steps {
                 sh '''
