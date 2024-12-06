@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'crystallang/crystal:latest'
-            args '-v $HOME/.cache:/root/.cache'
+           // args '-v $HOME/.cache:/root/.cache'
         }
     }
 
