@@ -9,9 +9,12 @@ description: |
 dependencies:
   db:
     github: crystal-lang/crystal-db
+
 development_dependencies:
   spectator:
     github: icy-arctic-fox/spectator
+  sqlite3:
+    github: crystal-lang/crystal-sqlite3
 
 #scripts:
 #  postinstall: crystal run src/cry_paginator/tasks/install.cr

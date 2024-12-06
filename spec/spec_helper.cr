@@ -1,2 +1,2 @@
 require "spec"
-require "../src/paginator"
+require "../src/cry_paginator"

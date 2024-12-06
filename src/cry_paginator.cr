@@ -1,12 +1,12 @@
-require "./backend"
-require "./view_helper"
+require "db"
+require "./paginator/*"
 
 module Paginator
   # Remove the hardcoded DB initialization
   @@db : DB::Database? = nil
 
   def self.db
-    @@db || raise "Database connection not set. Call Paginator.db = your_database_connection first"
+    @@db || raise RuntimeError.new("Database connection not set. Call Paginator.db = your_database_connection first")
   end
 
   def self.db=(connection : DB::Database)
@@ -43,18 +43,46 @@ module Paginator
 
     # Returns a dynamic pagination window with optional gaps
     def page_window(size = 5, gap_symbol = :gap)
-      half = size // 2
-      start_page = [current_page - half, 1].max
-      end_page = [current_page + half, total_pages].min
-      if total_pages > size
-        window = [1, gap_symbol] if start_page > 2
-        window ||= [] of Int32 | Symbol
-        window.concat((start_page..end_page).to_a)
-        window.concat([gap_symbol, total_pages]) if end_page < total_pages - 1
-        window
+      puts "Current page: #{current_page}"
+      puts "Total pages: #{total_pages}"
+      puts "Window size: #{size}"
+
+      window = [] of Int32 | Symbol
+
+      # For small total pages, return all pages
+      return (1..total_pages).to_a if total_pages <= size
+
+      # Always add first page
+      window << 1
+
+      # Calculate visible range around current page
+      half = (size - 1) // 2
+      left = current_page - half
+      right = current_page + half
+
+      # Add gap after first page if needed
+      if left > 2
+        window << gap_symbol
+        start_page = left
       else
-        (1..total_pages).to_a
+        start_page = 2
       end
+
+      # Add middle pages
+      (start_page..right).each do |page|
+        window << page if page < total_pages
+      end
+
+      # Add gap before last page if needed
+      if right < total_pages - 1
+        window << gap_symbol
+      end
+
+      # Add last page if not already included
+      window << total_pages unless window.last == total_pages
+
+      puts "Window: #{window}"
+      window
     end
   end
 
@@ -84,7 +112,17 @@ module Paginator
       query << "ORDER BY #{order_by}"
       query << "LIMIT $1 OFFSET $2"
 
-      items = db.query_all(query.join(" "), args: [per_page, offset], as: self)
+      # Replace query_all with explicit mapping
+      items = [] of self
+      db.query(query.join(" "), args: [per_page, offset]) do |rs|
+        rs.each do
+          items << new(
+            id: rs.read(Int32?),
+            name: rs.read(String?)
+          )
+        end
+      end
+
       count_query = ["SELECT COUNT(*) FROM #{table_name}"]
       count_query << "WHERE #{where}" if where
       total = db.scalar(count_query.join(" ")).as(Int64)
@@ -95,11 +133,6 @@ module Paginator
         current_page: page,
         per_page: per_page
       )
-    end
-
-    # Ensure the including class defines a table_name method
-    def self.table_name
-      @@table_name ||= "#{self.name.split("::").last.underscore}s"
     end
   end
 end

@@ -8,3 +8,7 @@ shards:
     git: https://github.com/icy-arctic-fox/spectator.git
     version: 0.12.1
 
+  sqlite3:
+    git: https://github.com/crystal-lang/crystal-sqlite3.git
+    version: 0.21.0
+

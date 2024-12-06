@@ -59,11 +59,13 @@ module Paginator
     end
 
     # Display pagination info (e.g., "Showing items 1-10 of 100")
-    def pagination_info(paginator : Paginator::Page, item_name : String = "items")
+    def pagination_info(paginator, item_name = "items")
+      start_item = ((paginator.current_page - 1) * paginator.per_page) + 1
+      end_item = [start_item + paginator.per_page - 1, paginator.total].min
+
       <<-HTML
     <div class="pagination-info">
-      Showing #{paginator.current_page * paginator.per_page - paginator.per_page + 1}-#{[paginator.current_page * paginator.per_page, paginator.total].min}
-      of #{paginator.total} #{item_name}.
+      Showing #{start_item}-#{end_item} of #{paginator.total} #{item_name}.
     </div>
     HTML
     end
