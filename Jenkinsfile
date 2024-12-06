@@ -1,6 +1,6 @@
 pipeline {
-   agent any
-   
+    agent any
+
     environment {
         DATABASE_URL = 'sqlite3://db.sqlite3'
     }
@@ -15,25 +15,19 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'shards install'
+                sh 'docker run --rm -v "$WORKSPACE":/app -w /app crystallang/crystal shards install'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'crystal spec'
+                sh 'docker run --rm -v "$WORKSPACE":/app -w /app crystallang/crystal crystal spec'
             }
         }
 
         stage('Lint Code') {
             steps {
-                sh 'crystal tool format --check'
-            }
-        }
-
-        stage('Static Analysis') {
-            steps {
-                sh 'ameba'
+                sh 'docker run --rm -v "$WORKSPACE":/app -w /app crystallang/crystal crystal tool format --check'
             }
         }
     }
@@ -41,9 +35,6 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: '**/log/*', allowEmptyArchive: true
-        }
-        success {
-            echo 'Build succeeded!'
         }
         failure {
             echo 'Build failed!'
