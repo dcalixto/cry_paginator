@@ -10,7 +10,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/main']], // Changed back to 'main' as it's the default branch
+                    branches: [[name: '*/master']], // Changed from 'main' to 'master'
                     userRemoteConfigs: [[
                         url: 'https://github.com/dcalixto/cry_paginator.git'
                     ]]
@@ -20,7 +20,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'curl -fsSL https://crystal-lang.org/install.sh | sudo bash' // Install Crystal if needed
+                sh 'curl -fsSL https://crystal-lang.org/install.sh | sudo bash'
                 sh 'shards install'
             }
         }
@@ -40,7 +40,7 @@ pipeline {
     
     post {
         always {
-            cleanWs() // Clean workspace after build
+            cleanWs()
             archiveArtifacts artifacts: '**/log/*', allowEmptyArchive: true
         }
         success {
