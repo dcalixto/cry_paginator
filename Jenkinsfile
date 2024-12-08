@@ -10,28 +10,40 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/master']], // Changed from 'main' to 'master'
+                    branches: [[name: '*/master']], // Ensure the branch is correct
                     userRemoteConfigs: [[
                         url: 'https://github.com/dcalixto/cry_paginator.git'
                     ]]
                 ])
             }
         }
-       stage('Check Dependencies') {
-           steps {
-               sh 'ldd /usr/bin/shards'
-           }
+        
+        stage('Check Dependencies') {
+            steps {
+                script {
+                    // Ensure shards binary exists and install it if missing
+                    def shardsPath = sh(script: "which shards || true", returnStdout: true).trim()
+                    if (!shardsPath) {
+                        sh '''
+                            apt-get update
+                            apt-get install -y shards
+                        '''
+                    } else {
+                        echo "Shards already installed at ${shardsPath}"
+                    }
+                    sh 'ldd $(which shards)'
+                }
+            }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
                     apt-get update
-                    apt-get install -y crystal shards  
-                    bash -c "/usr/bin/shards install"
+                    apt-get install -y crystal shards
+                    shards install
                 '''
-           
-           }
+            }
         }
 
         stage('Run Tests') {
