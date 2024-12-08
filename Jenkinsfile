@@ -20,13 +20,13 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                // Install Crystal using apt-get directly
                 sh '''
                     apt-get update
                     apt-get install -y crystal
+                    export PATH="/usr/bin:$PATH"
                 '''
                 sh 'shards install'
-            }
+           }
         }
 
         stage('Run Tests') {
