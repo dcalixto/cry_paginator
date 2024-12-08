@@ -17,13 +17,18 @@ pipeline {
                 ])
             }
         }
+       stage('Check Dependencies') {
+           steps {
+               sh 'ldd /usr/bin/shards'
+           }
+        }
 
         stage('Install Dependencies') {
             steps {
                 sh '''
                     apt-get update
                     apt-get install -y crystal shards  
-                    /usr/bin/shards install
+                    bash -c "/usr/bin/shards install"
                 '''
            
            }
