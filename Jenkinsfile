@@ -10,7 +10,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/master']], // Ensure the branch is correct
+                    branches: [[name: '*/master']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/dcalixto/cry_paginator.git'
                     ]]
@@ -21,16 +21,24 @@ pipeline {
         stage('Check Dependencies') {
             steps {
                 script {
-                    // Ensure shards binary exists and install it if missing
                     def shardsPath = sh(script: "which shards || true", returnStdout: true).trim()
                     if (!shardsPath) {
-                        sh '''
-                            apt-get update
-                            apt-get install -y curl gnupg
-                            curl -fsSL https://dist.crystal-lang.org/apt/setup.sh | bash
-                          
-                            apt-get install -y shards
-                        '''
+                        try {
+                            sh '''
+                                apt-get update
+                                apt-get install -y curl gnupg
+                                curl -fsSL https://dist.crystal-lang.org/apt/setup.sh | bash
+                                apt-get update
+                                apt-get install -y shards
+                            '''
+                        } catch (Exception e) {
+                            echo "Failed to install shards via package manager, falling back to manual installation."
+                            sh '''
+                                wget https://github.com/crystal-lang/shards/releases/latest/download/shards-linux-x86_64
+                                mv shards-linux-x86_64 /usr/local/bin/shards
+                                chmod +x /usr/local/bin/shards
+                            '''
+                        }
                     } else {
                         echo "Shards already installed at ${shardsPath}"
                     }
@@ -43,7 +51,7 @@ pipeline {
             steps {
                 sh '''
                     apt-get update
-                    apt-get install -y crystal shards
+                    apt-get install -y crystal shards || true
                     shards install
                 '''
             }
