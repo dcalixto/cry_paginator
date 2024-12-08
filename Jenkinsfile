@@ -22,8 +22,8 @@ pipeline {
             steps {
                 sh '''
                     apt-get update
-                    apt-get install -y crystal
-                    export PATH="/usr/bin:$PATH"
+                    apt-get install -y crystal   
+                    export PATH="/usr/local/bin:$PATH"
                     which shards
                     shards install
                 '''
