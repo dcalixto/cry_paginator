@@ -22,7 +22,7 @@ pipeline {
             steps {
                 sh '''
                     apt-get update
-                    apt-get install -y crystal   
+                    apt-get install -y crystal shards  
                     /usr/bin/shards install
                 '''
            
