@@ -19,13 +19,17 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-             steps {
-                  sh '''
-                       apt-get update
-                       apt-get install -y crystal crystal-dev
-                '''
-               sh 'shards install'
-           }
+           steps {
+                sh '''
+                  apt-get update
+                  apt-get install -y crystal git libyaml-dev libssl-dev libgmp-dev
+                  git clone https://github.com/crystal-lang/shards.git
+                  cd shards
+                  make CRYSTAL=/usr/bin/crystal
+                  make install
+            '''
+            sh 'shards install'
+            }
         }
 
         stage('Run Tests') {
