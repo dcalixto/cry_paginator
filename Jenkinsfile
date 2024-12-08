@@ -20,7 +20,11 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'curl -fsSL https://crystal-lang.org/install.sh | sudo bash'
+                // Install Crystal using apt-get directly
+                sh '''
+                    apt-get update
+                    apt-get install -y crystal
+                '''
                 sh 'shards install'
             }
         }
