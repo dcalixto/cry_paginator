@@ -24,6 +24,7 @@ pipeline {
                     apt-get update
                     apt-get install -y crystal
                     export PATH="/usr/bin:$PATH"
+                    which shards
                     shards install
                 '''
            
