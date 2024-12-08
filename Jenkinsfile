@@ -19,13 +19,12 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            steps {
-                sh '''
-                    apt-get update
-                    apt-get install -y crystal
-                    export PATH="/usr/bin:$PATH"
+             steps {
+                  sh '''
+                       apt-get update
+                       apt-get install -y crystal crystal-dev
                 '''
-                sh 'shards install'
+               sh 'shards install'
            }
         }
 
