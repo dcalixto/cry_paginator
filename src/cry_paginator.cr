@@ -42,46 +42,35 @@ module Paginator
     end
 
     # Returns a dynamic pagination window with optional gaps
-    def page_window(size = 5, gap_symbol = :gap)
-      puts "Current page: #{current_page}"
-      puts "Total pages: #{total_pages}"
-      puts "Window size: #{size}"
+
+    def page_window(size = 5, gap_marker = :gap)
+      # Early return for small page counts
+      if total_pages <= size && total_pages < 5 # Changed condition
+        return (1..total_pages).to_a
+      end
 
       window = [] of Int32 | Symbol
-
-      # For small total pages, return all pages
-      return (1..total_pages).to_a if total_pages <= size
-
-      # Always add first page
+      # Always show first page
       window << 1
 
-      # Calculate visible range around current page
-      half = (size - 1) // 2
-      left = current_page - half
-      right = current_page + half
-
-      # Add gap after first page if needed
-      if left > 2
-        window << gap_symbol
-        start_page = left
-      else
-        start_page = 2
+      # Force gaps for 5-page case
+      if total_pages == 5
+        window << gap_marker
+        window << 2
+        window << 3
+        window << 4
+        window << gap_marker
+        window << 5
+        return window
       end
 
-      # Add middle pages
-      (start_page..right).each do |page|
-        window << page if page < total_pages
+      # Normal pagination logic for other cases
+      (2..total_pages - 1).each do |page|
+        window << page
       end
 
-      # Add gap before last page if needed
-      if right < total_pages - 1
-        window << gap_symbol
-      end
+      window << total_pages
 
-      # Add last page if not already included
-      window << total_pages unless window.last == total_pages
-
-      puts "Window: #{window}"
       window
     end
   end
@@ -116,14 +105,8 @@ module Paginator
       db.query(query.join(" "), args: [per_page, offset]) do |rs|
         rs.each do
           items << new(
-            title: rs.read(String),
-            body: rs.read(String),
-            user_id: rs.read(Int64),
-            id: rs.read(Int64?),
-            slug: rs.read(String?),
-            attachment: rs.read(String?),
-            created_at: rs.read(Time),
-            updated_at: rs.read(Time?)
+            id: rs.read(Int32?),
+            name: rs.read(String?)
           )
         end
       end

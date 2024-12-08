@@ -2,7 +2,8 @@
 
 A simple, flexible, and high-performance pagination library for Crystal inspired by Ruby's Pagy gem.
 
-[![Build Status](https://travis-ci.com/<your-username>/<your-repo>.svg?branch=main)](https://travis-ci.com/<your-username>/<your-repo>)
+[![Build Status](http://localhost:8080/buildStatus/icon?job=cry_paginator)](http://localhost:8080/job/cry_paginator/)
+[![Crystal Test](https://github.com/dcalixto/cry_paginator/actions/workflows/crystal-test.yml/badge.svg?branch=master)](https://github.com/dcalixto/cry_paginator/actions/workflows/crystal-test.yml)
 
 ## Features
 

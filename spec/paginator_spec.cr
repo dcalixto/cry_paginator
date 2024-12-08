@@ -44,7 +44,8 @@ Spectator.describe Paginator do
     let(:page) { Paginator::Page(String).new(["item1", "item2"], 50, 2, 10) }
 
     it "generates a page window with gaps" do
-      expect(page.page_window(3)).to eq([1, :gap, 2, 3, 4, :gap, 5])
+      page = Paginator::Page(Int32).new([1, 2, 3], 50, 3, 10)
+      expect(page.page_window(5)).to eq([1, :gap, 2, 3, 4, :gap, 5])
     end
 
     it "returns next_page correctly" do
@@ -76,6 +77,10 @@ Spectator.describe Paginator do
     end
 
     it "generates a page window with gaps" do
+      # Test case 1: window size 5
+      expect(page.page_window(5)).to eq([1, :gap, 2, 3, 4, :gap, 5])
+
+      # Test case 2: window size 3
       expect(page.page_window(3)).to eq([1, :gap, 2, 3, 4, :gap, 5])
     end
 

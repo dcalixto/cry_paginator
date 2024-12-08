@@ -42,22 +42,23 @@ module Paginator
         pagination_link(nil, "Next", disabled: true)
       end
     end
-
     # Generate the window of pagination links
     def pagination_window(paginator : Paginator::Page)
       paginator.page_window.map do |page|
-        if page.is_a?(Int32)
+        case page
+        when Int32
           pagination_link(page, page.to_s, current: page == paginator.current_page)
-        elsif page == :gap
-          <<-HTML
-        <span class="pagination-gap">…</span>
-        HTML
+        when Symbol
+          if page == :gap
+            %(<span class="pagination-gap">…</span>)
+          else
+            raise "Unexpected pagination window value: #{page.inspect}"
+          end
         else
           raise "Unexpected pagination window value: #{page.inspect}"
         end
       end.join("\n")
     end
-
     # Display pagination info (e.g., "Showing items 1-10 of 100")
     def pagination_info(paginator, item_name = "items")
       start_item = ((paginator.current_page - 1) * paginator.per_page) + 1
