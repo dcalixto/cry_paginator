@@ -112,13 +112,18 @@ module Paginator
       query << "ORDER BY #{order_by}"
       query << "LIMIT $1 OFFSET $2"
 
-      # Replace query_all with explicit mapping
       items = [] of self
       db.query(query.join(" "), args: [per_page, offset]) do |rs|
         rs.each do
           items << new(
-            id: rs.read(Int32?),
-            name: rs.read(String?)
+            title: rs.read(String),
+            body: rs.read(String),
+            user_id: rs.read(Int64),
+            id: rs.read(Int64?),
+            slug: rs.read(String?),
+            attachment: rs.read(String?),
+            created_at: rs.read(Time),
+            updated_at: rs.read(Time?)
           )
         end
       end
