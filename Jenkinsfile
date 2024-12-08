@@ -1,9 +1,12 @@
 pipeline {
     agent any
 
-    environment {
-        DATABASE_URL = 'sqlite3://db.sqlite3'
-    }
+  environment {
+    DATABASE_URL = 'sqlite3://db.sqlite3'
+    PATH = "/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:${env.PATH}"
+    CRYSTAL_PATH = "/usr/share/crystal"
+}
+
 
     stages {
         stage('Clone Repository') {
@@ -18,19 +21,20 @@ pipeline {
             }
         }
 
-        stage('Check Dependencies') {
-            steps {
-                script {
-                    sh '''
-                        apt-get update
-                        apt-get install -y curl gnupg
-                        curl -fsSL https://dist.crystal-lang.org/apt/setup.sh | bash
-                        apt-get update
-                        apt-get install -y crystal
-                    '''
-                }
-            }
+ stage('Check Dependencies') {
+    steps {
+        script {
+            sh '''
+                sudo apt-get update
+                sudo apt-get install -y curl gnupg apt-transport-https
+                curl -fsSL https://crystal-lang.org/install.sh | sudo bash
+                sudo apt-get update
+                sudo apt-get install -y crystal shards
+            '''
         }
+    }
+}
+
 
         stage('Install Dependencies') {
             steps {
