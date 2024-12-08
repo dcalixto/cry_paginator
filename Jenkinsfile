@@ -19,22 +19,24 @@ pipeline {
         }
         
         stage('Check Dependencies') {
-            steps {
-                script {
-                    // Ensure shards binary exists and install it if missing
-                    def shardsPath = sh(script: "which shards || true", returnStdout: true).trim()
+         steps {
+             script {
+                   def shardsPath = sh(script: "which shards || true", returnStdout: true).trim()
                     if (!shardsPath) {
-                        sh '''
+                          sh '''
                             apt-get update
-                            apt-get install -y shards
-                        '''
+                            apt-get install -y curl gnupg
+                            curl -fsSL https://dist.crystal-lang.org/apt/setup.sh | bash
+                           apt-get install -y shards
+                         '''
                     } else {
-                        echo "Shards already installed at ${shardsPath}"
+                           echo "Shards already installed at ${shardsPath}"
                     }
-                    sh 'ldd $(which shards)'
-                }
-            }
-        }
+                          sh 'ldd $(which shards)'
+           }
+       }
+  
+
 
         stage('Install Dependencies') {
             steps {
