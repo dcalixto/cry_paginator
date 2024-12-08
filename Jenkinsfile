@@ -1,24 +1,14 @@
 pipeline {
     agent any
     
-    environment {
-        PATH = "/usr/bin:/usr/local/bin:${env.PATH}"
-    }
-    
     stages {
-        stage('Clone') {
-            steps {
-                checkout scm
-            }
-        }
-        
         stage('Setup') {
             steps {
                 sh '''
-                    sudo apt-get update
-                    sudo apt-get install -y curl gnupg apt-transport-https
-                    curl -fsSL https://crystal-lang.org/install.sh | sudo bash
-                    sudo apt-get install -y crystal shards
+                    apt-get update
+                    apt-get install -y curl gnupg apt-transport-https
+                    curl -fsSL https://crystal-lang.org/install.sh | bash
+                    apt-get install -y crystal shards
                     crystal --version
                     shards --version
                 '''
@@ -27,7 +17,7 @@ pipeline {
         
         stage('Dependencies') {
             steps {
-                sh 'sudo shards install'
+                sh 'shards install'
             }
         }
         
