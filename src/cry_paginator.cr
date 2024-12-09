@@ -104,10 +104,7 @@ module Paginator
       items = [] of self
       db.query(query.join(" "), args: [per_page, offset]) do |rs|
         rs.each do
-          items << new(
-            id: rs.read(Int32?),
-            name: rs.read(String?)
-          )
+          items << new(rs) # Use the DB::ResultSet constructor instead
         end
       end
 
