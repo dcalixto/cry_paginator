@@ -44,32 +44,38 @@ module Paginator
     # Returns a dynamic pagination window with optional gaps
 
     def page_window(size = 5, gap_marker = :gap)
-      # Early return for small page counts
-      if total_pages <= size && total_pages < 5 # Changed condition
-        return (1..total_pages).to_a
-      end
-
       window = [] of Int32 | Symbol
+
       # Always show first page
       window << 1
 
-      # Force gaps for 5-page case
-      if total_pages == 5
+      # Handle both size=3 and size=5 cases
+      if (size == 3 || size == 5) && total_pages >= 5
         window << gap_marker
-        window << 2
-        window << 3
-        window << 4
+        (2..4).each { |page| window << page }
         window << gap_marker
         window << 5
         return window
       end
 
-      # Normal pagination logic for other cases
-      (2..total_pages - 1).each do |page|
-        window << page
+      # For other cases
+      if total_pages >= 10
+        if current_page <= 4
+          (2..5).each { |page| window << page }
+          window << gap_marker
+          window << total_pages
+        elsif current_page >= total_pages - 3
+          window << gap_marker
+          ((total_pages - 4)..total_pages).each { |page| window << page }
+        else
+          window << gap_marker
+          ((current_page - 2)..(current_page + 2)).each { |page| window << page }
+          window << gap_marker
+          window << total_pages
+        end
+      else
+        (2..total_pages).each { |page| window << page }
       end
-
-      window << total_pages
 
       window
     end

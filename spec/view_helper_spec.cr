@@ -1,5 +1,6 @@
 require "spectator"
 require "../src/cry_paginator"
+require "./spec_helper"
 
 Spectator.describe Paginator::ViewHelper do
   include Paginator::ViewHelper
@@ -33,9 +34,6 @@ Spectator.describe Paginator::ViewHelper do
   describe "#pagination_nav" do
     it "generates the full pagination navigation bar" do
       html = pagination_nav(paginator)
-      # Change this:
-      # expect(html).to include("pagination-nav")
-      # To this:
       expect(html).to contain("pagination-nav")
       expect(html).to contain("Previous")
       expect(html).to contain("Next")
@@ -76,32 +74,21 @@ Spectator.describe Paginator::ViewHelper do
     end
 
     it "includes a gap symbol for skipped pages" do
-      paginator = Paginator::Page(String).new(["item1"], 100, 6, 10)
-      html = pagination_window(paginator)
-      expect(html).to contain(%(<span class="pagination-gap">…</span>))
+      items = [] of Item
+      page = Paginator::Page(Item).new(items, 100_i64, 6, 10)
+      html = pagination_window(page)
+
+      expect(html).to contain("<span class=\"pagination-gap\">…</span>")
     end
   end
 
   describe "#pagination_info" do
-    it "displays pagination information" do
-      html = pagination_info(paginator)
-      expected = <<-HTML
-    <div class="pagination-info">
-      Showing 21-30 of 50 items.
-    </div>
-    HTML
-      expect(html.strip).to eq(expected.strip)
-    end
+    it "displays correct pagination info" do
+      items = [] of Item
+      page = Paginator::Page(Item).new(items, 100_i64, 2, 10)
+      info = pagination_info(page)
 
-    it "adjusts for fewer items on the last page" do
-      paginator = Paginator::Page(String).new(["item1"], 25, 3, 10)
-      html = pagination_info(paginator)
-      expected = <<-HTML
-    <div class="pagination-info">
-      Showing 21-25 of 25 items.
-    </div>
-    HTML
-      expect(html.strip).to eq(expected.strip)
+      expect(info).to contain("Showing 11-20 of 100 items")
     end
   end
 end

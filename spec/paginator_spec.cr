@@ -7,11 +7,15 @@ require "./support/item"
 
 # Define Item class at the top level
 class Item
-  include Paginator
   property id : Int32?
   property name : String?
 
   def initialize(@id = nil, @name = nil)
+  end
+
+  def initialize(rs : DB::ResultSet)
+    @id = rs.read(Int32?)
+    @name = rs.read(String?)
   end
 
   def self.table_name
@@ -19,6 +23,7 @@ class Item
   end
 end
 
+include Paginator
 Spectator.describe Paginator do
   describe "Paginator.db" do
     context "when no database connection is set" do

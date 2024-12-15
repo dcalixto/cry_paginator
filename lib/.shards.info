@@ -10,3 +10,6 @@ shards:
   sqlite3:
     git: https://github.com/crystal-lang/crystal-sqlite3.git
     version: 0.21.0
+  dotenv:
+    git: https://github.com/drum445/dotenv.git
+    version: 0.5.0

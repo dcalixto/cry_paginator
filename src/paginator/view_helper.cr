@@ -13,16 +13,16 @@ module Paginator
     end
 
     # Generate navigation links for pagination
-    def pagination_nav(paginator : Paginator::Page, base_url : String = "/", extra_classes = "")
+    def pagination_nav(paginator : Paginator::Page, base_url : String = "/", extra_classes = "", use_window : Bool = true)
       nav_classes = ["pagination-nav", extra_classes].join(" ")
 
       <<-HTML
-    <nav class="#{nav_classes}" aria-label="Pagination">
-      #{pagination_prev(paginator)}
-      #{pagination_window(paginator)}
-      #{pagination_next(paginator)}
-    </nav>
-    HTML
+      <nav class="#{nav_classes}" aria-label="Pagination">
+        #{pagination_prev(paginator)}
+        #{pagination_window(paginator, use_window)}
+        #{pagination_next(paginator)}
+      </nav>
+      HTML
     end
 
     # Display "Previous" link
@@ -42,8 +42,11 @@ module Paginator
         pagination_link(nil, "Next", disabled: true)
       end
     end
+
     # Generate the window of pagination links
-    def pagination_window(paginator : Paginator::Page)
+    def pagination_window(paginator : Paginator::Page, use_window : Bool = true)
+      return standard_pagination_links(paginator) unless use_window
+
       paginator.page_window.map do |page|
         case page
         when Int32
@@ -59,16 +62,23 @@ module Paginator
         end
       end.join("\n")
     end
-    # Display pagination info (e.g., "Showing items 1-10 of 100")
+
+    # Display pagination info
     def pagination_info(paginator, item_name = "items")
       start_item = ((paginator.current_page - 1) * paginator.per_page) + 1
       end_item = [start_item + paginator.per_page - 1, paginator.total].min
 
       <<-HTML
-    <div class="pagination-info">
-      Showing #{start_item}-#{end_item} of #{paginator.total} #{item_name}.
-    </div>
-    HTML
+      <div class="pagination-info">
+        Showing #{start_item}-#{end_item} of #{paginator.total} #{item_name}.
+      </div>
+      HTML
+    end
+
+    private def standard_pagination_links(paginator : Paginator::Page)
+      (1..paginator.total_pages).map do |page|
+        pagination_link(page, page.to_s, current: page == paginator.current_page)
+      end.join("\n")
     end
   end
 end
