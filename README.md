@@ -36,13 +36,21 @@ require "cry_paginator"
 
 class Article
   include Paginator
-  # Define your database connection
-  @@db : DB::Database = DB.open("your_database_url")
 
-# Add a class method to access the database
-  def self.db
-    @@db
+  def self.table_name
+    "artiicles"
   end
+  #  @@db : DB::Database? = nil
+  # # Define your database connection
+
+  # def self.db : DB::Database
+  #   @@db ||= DB.open(ENV["your_database_url"])
+  # end
+  # # Keep the setter as is
+  # def self.db=(database : DB::Database)
+  #   @@db = database
+  # end
+
 end
 ```
 
@@ -124,7 +132,7 @@ class ArticlesController
      page = env.params.query["page"]?.try(&.to_i) || 1
      per_page = env.params.query["per_page"]?.try(&.to_i) || 10
      paginator = Article.paginate(Article.db, page, per_page)
-     @articles = @paginator.items
+     @articles = @paginator.not_nil!.items
 
      render "src/views/articles/index.ecr"
    end
@@ -152,9 +160,14 @@ Navigation Links
   <a href="?page=1" class="pagination-link">1</a>
   <a href="#" class="pagination-link current" aria-current="page">2</a>
   <a href="?page=3" class="pagination-link">3</a>
-  <span class="pagination-gap">…</span>
-  <a href="?page=10" class="pagination-link">10</a>
-  <a href="?page=3" class="pagination-link">Next</a>
+  <a href="?page=4" class="pagination-link">4</a>
+  <a href="?page=5" class="pagination-link">5</a>
+  <a href="?page=6" class="pagination-link">6</a>
+  <a href="?page=7" class="pagination-link">7</a>
+   <a href="?page=8" class="pagination-link">8</a>
+    <a href="?page=9" class="pagination-link">9</a>
+    <a href="?page=10" class="pagination-link">10</a>
+  <a href="?page=11" class="pagination-link">Next</a>
 </nav>
 ```
 
