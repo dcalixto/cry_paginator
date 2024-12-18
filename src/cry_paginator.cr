@@ -4,7 +4,7 @@ require "./paginator/*"
 module Paginator
   @@db : DB::Database? = nil
   @@default_config = {
-    per_page:    10,
+    per_page:    12,
     order_by:    "created_at DESC",
     window_gap:  false,
     window_size: 2,
@@ -65,7 +65,7 @@ module Paginator
 
       window = [] of Int32 | Symbol
 
-      if total_pages <= (window_size * 2) + 3
+      if total_pages <= (window_size * 2) + 4
         return (1..total_pages).to_a
       end
 
