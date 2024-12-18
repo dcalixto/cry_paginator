@@ -71,6 +71,8 @@ Override the defaults globally in your app:
 ```crystal
 Paginator.config = {
   per_page: 20,
+  window_gap: true,
+  window_size: 2
   order_by: "created_at DESC"
 }
 ```
@@ -83,10 +85,18 @@ Page.paginate(page: 2, per_page: 20, order_by: "created_at DESC")
 
 ## Dynamic Pagination Window
 
-Display a pagination window with gaps for easy navigation:
+You can now use the pagination with or without window gaps:
 
 ```crystal
-puts page.page_window # Example output: [1, :gap, 8, 9, 10, :gap, 36]
+# Without window gap (default)
+posts = Post.paginate(db, page: 1)
+
+# With window gap
+posts = Post.paginate(db, page: 1, window_gap: true)
+
+# With custom window size
+posts = Post.paginate(db, page: 1, window_gap: true, window_size: 3)
+
 ```
 
 ## Controller Setup

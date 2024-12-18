@@ -2,8 +2,13 @@ require "db"
 require "./paginator/*"
 
 module Paginator
-  # Remove the hardcoded DB initialization
   @@db : DB::Database? = nil
+  @@default_config = {
+    per_page:    10,
+    order_by:    "created_at DESC",
+    window_gap:  false,
+    window_size: 2,
+  }
 
   def self.db
     @@db || raise RuntimeError.new("Database connection not set. Call Paginator.db = your_database_connection first")
@@ -13,15 +18,24 @@ module Paginator
     @@db = connection
   end
 
-  # Holds paginated data and metadata
+  def self.config
+    @@default_config
+  end
+
+  def self.config=(new_config : Hash(Symbol, _))
+    @@default_config.merge!(new_config)
+  end
+
   class Page(T)
     getter items : Array(T)
     getter total : Int64
     getter total_pages : Int32
     getter current_page : Int32
     getter per_page : Int32
+    getter window_gap : Bool
+    getter window_size : Int32
 
-    def initialize(@items : Array(T), @total : Int64, @current_page : Int32, @per_page : Int32)
+    def initialize(@items : Array(T), @total : Int64, @current_page : Int32, @per_page : Int32, @window_gap = false, @window_size = 2)
       @total_pages = (@total / @per_page.to_f).ceil.to_i
     end
 
@@ -41,64 +55,46 @@ module Paginator
       current_page == total_pages
     end
 
-    # Returns a dynamic pagination window with optional gaps
+    def pages
+      return (1..total_pages).to_a unless window_gap
 
-    def page_window(size = 5, gap_marker = :gap)
       window = [] of Int32 | Symbol
 
-      # Always show first page
+      if total_pages <= (window_size * 2) + 4
+        return (1..total_pages).to_a
+      end
+
+      # Always include first page
       window << 1
 
-      # Handle both size=3 and size=5 cases
-      if (size == 3 || size == 5) && total_pages >= 5
-        window << gap_marker
-        (2..4).each { |page| window << page }
-        window << gap_marker
-        window << 5
-        return window
+      if current_page > window_size + 2
+        window << :gap
       end
 
-      # For other cases
-      if total_pages >= 10
-        if current_page <= 4
-          (2..5).each { |page| window << page }
-          window << gap_marker
-          window << total_pages
-        elsif current_page >= total_pages - 3
-          window << gap_marker
-          ((total_pages - 4)..total_pages).each { |page| window << page }
-        else
-          window << gap_marker
-          ((current_page - 2)..(current_page + 2)).each { |page| window << page }
-          window << gap_marker
-          window << total_pages
-        end
-      else
-        (2..total_pages).each { |page| window << page }
+      # Calculate window around current page
+      from = [current_page - window_size, 2].max
+      to = [current_page + window_size, total_pages - 1].min
+
+      (from..to).each { |page| window << page }
+
+      if current_page < total_pages - (window_size + 1)
+        window << :gap
       end
+
+      # Always include last page
+      window << total_pages unless window.includes?(total_pages)
 
       window
     end
   end
 
-  # Default configurations
-  @@default_config = {
-    per_page: 10,
-    order_by: "created_at DESC",
-  }
-
-  def self.config
-    @@default_config
-  end
-
-  def self.config=(new_config : Hash(Symbol, _))
-    @@default_config.merge!(new_config)
-  end
-
   macro included
-    def self.paginate(db : DB::Database, page : Int32, per_page : Int32 = Paginator.config[:per_page],
+    def self.paginate(db : DB::Database, page : Int32,
+                      per_page : Int32 = Paginator.config[:per_page],
                       order_by : String = Paginator.config[:order_by],
-                      where : String? = nil)
+                      where : String? = nil,
+                      window_gap : Bool = Paginator.config[:window_gap],
+                      window_size : Int32 = Paginator.config[:window_size])
       raise ArgumentError.new("Page must be >= 1") if page < 1
       offset = (page - 1) * per_page
 
@@ -110,7 +106,7 @@ module Paginator
       items = [] of self
       db.query(query.join(" "), args: [per_page, offset]) do |rs|
         rs.each do
-          items << new(rs) # Use the DB::ResultSet constructor instead
+          items << new(rs)
         end
       end
 
@@ -122,7 +118,9 @@ module Paginator
         items: items,
         total: total,
         current_page: page,
-        per_page: per_page
+        per_page: per_page,
+        window_gap: window_gap,
+        window_size: window_size
       )
     end
   end
