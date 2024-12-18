@@ -14,12 +14,16 @@ module Paginator
 
     # Generate navigation links for pagination
     def pagination_nav(paginator : Paginator::Page, base_url : String = "/", extra_classes = "", use_window : Bool = true)
-      nav_classes = ["pagination-nav", extra_classes].join(" ")
+      nav_classes = ["pagination", extra_classes].join(" ")
 
       <<-HTML
       <nav class="#{nav_classes}" aria-label="Pagination">
         #{pagination_prev(paginator)}
-        #{pagination_window(paginator, use_window)}
+        
+        <ul class="pagination-list">
+          #{pagination_window(paginator, use_window)}
+        </ul>
+        
         #{pagination_next(paginator)}
       </nav>
       HTML
@@ -43,22 +47,26 @@ module Paginator
       end
     end
 
-    # Generate the window of pagination links
+    # Add the window pagination helper
+    def window_pagination(current_page, total_pages, window_size = 10)
+      start_page = [1, current_page - (window_size // 2)].max
+      end_page = [start_page + window_size - 1, total_pages].min
+
+      # Adjust start_page if near the end
+      start_page = [end_page - window_size + 1, 1].max if end_page - start_page < window_size
+
+      (start_page..end_page).to_a
+    end
+
+    # And update pagination_window to generate list items
     def pagination_window(paginator : Paginator::Page, use_window : Bool = true)
-      paginator.pages.map do |page|
-        case page
-        when Int32
-          pagination_link(page, page.to_s, current: page == paginator.current_page)
-        when Symbol
-          if page == :gap
-            %(<span class="pagination-gap">…</span>)
-          else
-            raise "Unexpected pagination window value: #{page.inspect}"
-          end
-        else
-          raise "Unexpected pagination window value: #{page.inspect}"
-        end
-      end.join("\n")
+      if use_window
+        window_pagination(paginator.current_page, paginator.total_pages).map do |page|
+          %(<li>#{pagination_link(page, page.to_s, current: page == paginator.current_page)}</li>)
+        end.join("\n")
+      else
+        standard_pagination_links(paginator)
+      end
     end
 
     # Display pagination info
