@@ -45,9 +45,7 @@ module Paginator
 
     # Generate the window of pagination links
     def pagination_window(paginator : Paginator::Page, use_window : Bool = true)
-      return standard_pagination_links(paginator) unless use_window
-
-      paginator.page_window.map do |page|
+      paginator.pages.map do |page|
         case page
         when Int32
           pagination_link(page, page.to_s, current: page == paginator.current_page)
