@@ -38,19 +38,11 @@ class Article
   include Paginator
 
   def self.table_name
-    "artiicles"
+    "articles"
   end
-  #  @@db : DB::Database? = nil
-  # # Define your database connection
-
-  # def self.db : DB::Database
-  #   @@db ||= DB.open(ENV["your_database_url"])
+  # def sef.db
+  #    DB
   # end
-  # # Keep the setter as is
-  # def self.db=(database : DB::Database)
-  #   @@db = database
-  # end
-
 end
 ```
 
@@ -158,16 +150,11 @@ Navigation Links
 <nav class="pagination-nav" aria-label="Pagination">
   <a href="?page=1" class="pagination-link">Previous</a>
   <a href="?page=1" class="pagination-link">1</a>
-  <a href="#" class="pagination-link current" aria-current="page">2</a>
+  <a href="?page=2" class="pagination-link current" aria-current="page">2</a>
   <a href="?page=3" class="pagination-link">3</a>
   <a href="?page=4" class="pagination-link">4</a>
   <a href="?page=5" class="pagination-link">5</a>
-  <a href="?page=6" class="pagination-link">6</a>
-  <a href="?page=7" class="pagination-link">7</a>
-   <a href="?page=8" class="pagination-link">8</a>
-    <a href="?page=9" class="pagination-link">9</a>
-    <a href="?page=10" class="pagination-link">10</a>
-  <a href="?page=11" class="pagination-link">Next</a>
+  <a href="?page=7" class="pagination-link">Next</a>
 </nav>
 ```
 
