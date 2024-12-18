@@ -49,11 +49,24 @@ module Paginator
 
     # Add the window pagination helper
     def window_pagination(current_page, total_pages, window_size = 10)
-      start_page = [1, current_page - (window_size // 2)].max
+      # Calculate the initial window
+      half_window = window_size // 2
+      start_page = [1, current_page - half_window].max
       end_page = [start_page + window_size - 1, total_pages].min
 
+      # Extend window when reaching boundaries
+      if current_page + half_window > end_page && end_page < total_pages
+        # Add more pages to the end
+        additional_pages = [4, total_pages - end_page].min
+        end_page += additional_pages
+      elsif current_page - half_window < start_page && start_page > 1
+        # Add more pages to the start
+        additional_pages = [4, start_page - 1].min
+        start_page -= additional_pages
+      end
+
       # Adjust start_page if near the end
-      start_page = [end_page - window_size + 1, 1].max if end_page - start_page < window_size
+      # start_page = [end_page - window_size + 1, 1].max if end_page - start_page < window_size
 
       (start_page..end_page).to_a
     end
