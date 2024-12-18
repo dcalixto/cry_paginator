@@ -23,7 +23,12 @@ module Paginator
   end
 
   def self.config=(new_config : Hash(Symbol, _))
-    @@default_config.merge!(new_config)
+    @@default_config = {
+      per_page:    new_config[:per_page]?.as?(Int32) || @@default_config[:per_page],
+      order_by:    new_config[:order_by]?.as?(String) || @@default_config[:order_by],
+      window_gap:  new_config[:window_gap]?.as?(Bool) || @@default_config[:window_gap],
+      window_size: new_config[:window_size]?.as?(Int32) || @@default_config[:window_size],
+    }
   end
 
   class Page(T)
@@ -60,7 +65,7 @@ module Paginator
 
       window = [] of Int32 | Symbol
 
-      if total_pages <= (window_size * 2) + 4
+      if total_pages <= (window_size * 2) + 3
         return (1..total_pages).to_a
       end
 
@@ -123,5 +128,10 @@ module Paginator
         window_size: window_size
       )
     end
+  end
+
+  #  method for testing purposes
+  def self.reset_db_for_testing
+    @@db = nil
   end
 end
