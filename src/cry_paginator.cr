@@ -62,6 +62,7 @@ module Paginator
   class Page(T)
     include SharedMethods
     getter per_page : Int32
+    getter current_page : Int32
     getter items : Array(T)
     getter count : Int64
     getter last : Int32
@@ -78,7 +79,16 @@ module Paginator
       current_page - 1
     end
 
-    def initialize(@items : Array(T), @page : Int32, @per_page : Int32, @count : Int64, **vars)
+    def next_page : Int32?
+      return nil if current_page >= total_pages
+      current_page + 1
+    end
+
+    def total_pages : Int32
+      (count / per_page.to_i64).ceil.to_i
+    end
+
+    def initialize(@items : Array(T), @current_page : Int32, @page : Int32, @per_page : Int32, @count : Int64, **vars)
       @last = 1
       @offset = 0
       @vars = DEFAULT.dup
