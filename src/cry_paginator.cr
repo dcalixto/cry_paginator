@@ -94,7 +94,7 @@ module Paginator
       assign_prev_and_next
     end
 
-    def series(size = @vars[:size])
+    def series(size : Int32 = @vars[:size].as(Int32))
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
