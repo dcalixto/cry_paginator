@@ -50,7 +50,7 @@ module Paginator
     getter count : Int64
     getter last : Int32
     getter offset : Int32
-    getter vars : Hash(Symbol, Int32 | String | Symbol | Bool)
+    getter vars : Hash(Symbol, Array(Symbol) | Int32 | String | Symbol | Bool)
     getter prev : Int32?
     getter next : Int32?
     getter page : Int32
@@ -60,13 +60,12 @@ module Paginator
     def initialize(@items : Array(T), @count : Int64, **vars)
       @last = 1
       @offset = 0
-      @vars = DEFAULT.to_h # Convert NamedTuple to Hash
+      @vars = DEFAULT.dup
       @prev = nil
       @next = nil
       @page = vars[:page]?.try(&.to_i) || 1
       @limit = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
       @outset = vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
-
       assign_vars(DEFAULT, vars)
       assign_and_check({page: 1, outset: 0})
       assign_limit
