@@ -56,10 +56,7 @@ module Paginator
       base_url = "#{request_path}?page=#{PAGE_TOKEN}"
       left, right = base_url.split(PAGE_TOKEN, 2)
 
-      ->(p : Int32 | Symbol, 
-         text : String = p.to_s,
-         classes : String? = nil,
-         aria : Hash(Symbol, String)? = nil) do
+   def nav_link(p, text : String = p.to_s)
         
         class_attr = classes ? %( class="#{classes}") : ""
         aria_attr = build_aria_attributes(aria)
@@ -81,7 +78,7 @@ module Paginator
           aria = {current: "page"} if p == page.page
           html << link.call(p, p.to_s, classes, aria)
         when :gap
-          html << link.call(:gap, "...", "pagination-ellipsis", {disabled: "true"})
+          html << link.call(:gap, "...", "pagination-ellipsis", {"disabled" => "true"})
         end
         html << "</li>"
       end
