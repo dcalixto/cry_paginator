@@ -4,17 +4,17 @@ require "./paginator/*"
 module Paginator
   VERSION = "0.1.0"
 
-  # Core defaults that can be customized
-  DEFAULT = {
-    count_args: [:all],
-    ends:       true,
-    limit:      20,
-    outset:     0,
-    page:       1,
-    page_param: :page,
-    size:       7,
-    overflow:   :empty_page,
-  }
+  # Define DEFAULT as a Hash directly
+  DEFAULT = Hash(Symbol, Array(Symbol) | Bool | Int32 | String | Symbol).new.merge({
+    :count_args => [:all],
+    :ends       => true,
+    :limit      => 20,
+    :outset     => 0,
+    :page       => 1,
+    :page_param => :page,
+    :size       => 7,
+    :overflow   => :empty_page,
+  })
 
   module SharedMethods
     private def assign_vars(default, vars)
