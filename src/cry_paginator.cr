@@ -49,21 +49,22 @@ module Paginator
     getter items : Array(T)
     getter count : Int64
     getter last : Int32
+    getter offset : Int32
     getter from : Int32
     getter to : Int32
     getter next : Int32?
     getter prev : Int32?
-    getter offset : Int32
     getter vars : Hash(Symbol, Int32 | String | Symbol | Bool)
 
     def initialize(@items : Array(T), @count : Int64, **vars)
-      @last = 1 # Initialize with a default value
+      @last = 1
+      @offset = 0 # Initialize with default value
 
       assign_vars(DEFAULT, vars)
       assign_and_check({page: 1, outset: 0})
       assign_limit
-      assign_offset
-      assign_last # This will update @last with the calculated value
+      assign_offset # This will update @offset with calculated value
+      assign_last
       check_overflow
 
       @from = [@offset - @outset + 1, @count].min
