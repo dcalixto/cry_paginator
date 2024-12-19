@@ -23,10 +23,20 @@ module Paginator
     end
 
     private def assign_and_check(name_min)
-      name_min.each do |name, min|
+      name_min.each_key do |name|
         value = @vars[name]
+        min = name_min[name]
         raise ArgumentError.new("#{name} must be >= #{min}") unless value.responds_to?(:to_i) && value.to_i >= min
-        instance_variable_set("@#{name}", value.to_i)
+
+        # Use direct assignment instead of instance_variable_set
+        case name
+        when :page
+          @page = value.to_i
+        when :outset
+          @outset = value.to_i
+        when :limit
+          @limit = value.to_i
+        end
       end
     end
 
