@@ -50,20 +50,17 @@ module Paginator
     getter count : Int64
     getter last : Int32
     getter offset : Int32
-    getter from : Int32
-    getter to : Int32
-    getter next : Int32?
-    getter prev : Int32?
     getter vars : Hash(Symbol, Int32 | String | Symbol | Bool)
 
     def initialize(@items : Array(T), @count : Int64, **vars)
       @last = 1
-      @offset = 0 # Initialize with default value
+      @offset = 0
+      @vars = DEFAULT.dup # Initialize with default values
 
       assign_vars(DEFAULT, vars)
       assign_and_check({page: 1, outset: 0})
       assign_limit
-      assign_offset # This will update @offset with calculated value
+      assign_offset
       assign_last
       check_overflow
 
