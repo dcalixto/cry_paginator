@@ -110,7 +110,7 @@ module Paginator
                   @page - left
                 end
 
-        (start...(start + size)).each { |p| series << p }
+        (start.to_i...(start.to_i + size)).each { |p| series << p }
 
         if @vars[:ends] && size >= 7
           series[0] = 1
