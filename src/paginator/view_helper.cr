@@ -52,23 +52,25 @@ module Paginator
       %(<span class="pagination-info">#{message}</span>)
     end
 
-    private def build_link_proc(page, **vars)
-      base_url = "#{request_path}?page=#{PAGE_TOKEN}"
-      left, right = base_url.split(PAGE_TOKEN, 2)
-
-   def nav_link(p, text : String = p.to_s)
-        
-        class_attr = classes ? %( class="#{classes}") : ""
-        aria_attr = build_aria_attributes(aria)
-        
-        if p.is_a?(Symbol)
-          %(<span#{class_attr}#{aria_attr}>#{text}</span>)
-        else
-          %(<a href="#{left}#{p}#{right}"#{class_attr}#{aria_attr}>#{text}</a>)
-        end
+    private def nav_link(p, text : String, left : String, right : String, classes : String? = nil, aria : Hash(Symbol, String)? = nil)
+      class_attr = classes ? %( class="#{classes}") : ""
+      aria_attr = build_aria_attributes(aria)
+  
+      if p.is_a?(Symbol)
+        %(<span#{class_attr}#{aria_attr}>#{text}</span>)
+      else
+        %(<a href="#{left}#{p}#{right}"#{class_attr}#{aria_attr}>#{text}</a>)
       end
     end
 
+    private def build_link_proc(page, **vars)
+      base_url = "#{request_path}?page=#{PAGE_TOKEN}"
+      left, right = base_url.split(PAGE_TOKEN, 2)
+  
+      ->(p : Int32 | Symbol, text : String, classes : String? = nil, aria : Hash(Symbol, String)? = nil) do
+        nav_link(p, text, left, right, classes, aria)
+      end
+    end
     private def build_page_links(html, page, link)
       page.series.each do |p|
         html << "<li>"
