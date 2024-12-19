@@ -18,7 +18,8 @@ module Paginator
 
   module SharedMethods
     private def assign_vars(default, vars)
-      @vars = default.merge(vars.reject { |k, v| default.has_key?(k) && (v.nil? || v.empty?) })
+      vars_hash = vars.to_h
+      @vars = default.merge(vars_hash.reject { |k, v| default.has_key?(k) && (v.nil? || v.empty?) })
     end
 
     private def assign_and_check(name_min)
