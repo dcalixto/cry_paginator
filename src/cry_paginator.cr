@@ -60,7 +60,7 @@ module Paginator
     def initialize(@items : Array(T), @count : Int64, **vars)
       @last = 1
       @offset = 0
-      @vars = DEFAULT.dup
+      @vars = DEFAULT.to_h # Convert NamedTuple to Hash
       @prev = nil
       @next = nil
       @page = vars[:page]?.try(&.to_i) || 1
