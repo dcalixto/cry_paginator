@@ -56,9 +56,9 @@ module Paginator
     getter offset : Int32
     getter vars : Hash(Symbol, Int32 | String | Symbol | Bool)
 
-    def initialize(@items : Array(T), **vars)
+    def initialize(@items : Array(T), @count : Int64, **vars)
       assign_vars(DEFAULT, vars)
-      assign_and_check({count: 0, page: 1, outset: 0})
+      assign_and_check({page: 1, outset: 0})
       assign_limit
       assign_offset
       assign_last
