@@ -56,8 +56,6 @@ module Paginator
     getter page : Int32
     getter limit : Int32
     getter outset : Int32
-    getter from : Int32
-    getter to : Int32
 
     def initialize(@items : Array(T), @count : Int64, **vars)
       @last = 1
@@ -67,6 +65,7 @@ module Paginator
       @next = nil
       @page = vars[:page]?.try(&.to_i) || 1
       @limit = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
+      @outset = vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
 
       assign_vars(DEFAULT, vars)
       assign_and_check({page: 1, outset: 0})
