@@ -51,13 +51,20 @@ module Paginator
     getter last : Int32
     getter offset : Int32
     getter vars : Hash(Symbol, Int32 | String | Symbol | Bool)
-    getter prev : Int32? # Explicitly declare as nilable Int32
+    getter prev : Int32?
+    getter next : Int32? # Explicitly declare as nilable Int32
+    getter from : Int32
+    getter to : Int32
+    getter page : Int32
+    getter limit : Int32
+    getter outset : Int32
 
     def initialize(@items : Array(T), @count : Int64, **vars)
       @last = 1
       @offset = 0
       @vars = DEFAULT.dup
-      @prev = nil # Initialize with nil
+      @prev = nil
+      @next = nil # Initialize with nil
 
       assign_vars(DEFAULT, vars)
       assign_and_check({page: 1, outset: 0})

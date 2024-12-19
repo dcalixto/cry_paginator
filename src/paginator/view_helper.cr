@@ -50,6 +50,18 @@ module Paginator
       %(<span class="pagination-info">#{message}</span>)
     end
 
+    def pagination_link(page : Int32?, text : String, current : Bool = false, disabled : Bool = false)
+      classes = ["pagination-link"]
+      classes << "current" if current
+      classes << "disabled" if disabled
+
+      if page && !disabled
+        "<a href=\"?page=#{page}\" class=\"#{classes.join(" ")}\">#{text}</a>"
+      else
+        "<span class=\"#{classes.join(" ")}\">#{text}</span>"
+      end
+    end
+
     private def nav_link(p, text : String, left : String, right : String, classes : String? = nil, aria : Hash(Symbol, String)? = nil)
       class_attr = classes ? %( class="#{classes}") : ""
       aria_attr = build_aria_attributes(aria)
