@@ -66,6 +66,7 @@ module Paginator
       @prev = nil
       @next = nil
       @page = vars[:page]?.try(&.to_i) || 1
+      @limit = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
 
       assign_vars(DEFAULT, vars)
       assign_and_check({page: 1, outset: 0})
