@@ -50,7 +50,12 @@ module Paginator
 
     private def assign_last
       @last = [(@count.to_f / @limit).ceil, 1].max.to_i
-      @last = @vars[:max_pages].to_i if @vars[:max_pages]? && @last > @vars[:max_pages]
+
+      # Convert max_pages to Int32 before comparison
+      if max_pages = @vars[:max_pages]?
+        max_pages_int = max_pages.is_a?(Number) ? max_pages.to_i : nil
+        @last = max_pages_int if max_pages_int && @last > max_pages_int
+      end
     end
   end
 
