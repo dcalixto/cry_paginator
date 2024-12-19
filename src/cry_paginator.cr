@@ -73,6 +73,11 @@ module Paginator
     getter limit : Int32
     getter outset : Int32
 
+    def prev_page : Int32?
+      return nil if current_page <= 1
+      current_page - 1
+    end
+
     def initialize(@items : Array(T), @page : Int32, @per_page : Int32, @count : Int64, **vars)
       @last = 1
       @offset = 0
