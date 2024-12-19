@@ -16,6 +16,33 @@ module Paginator
     overflow:   :empty_page,
   }
 
+  module SharedMethods
+    private def assign_vars(default, vars)
+      @vars = default.merge(vars.reject { |k, v| default.has_key?(k) && (v.nil? || v.empty?) })
+    end
+
+    private def assign_and_check(name_min)
+      name_min.each do |name, min|
+        value = @vars[name]
+        raise ArgumentError.new("#{name} must be >= #{min}") unless value.responds_to?(:to_i) && value.to_i >= min
+        instance_variable_set("@#{name}", value.to_i)
+      end
+    end
+
+    private def assign_limit
+      assign_and_check({limit: 1})
+    end
+
+    private def assign_offset
+      @offset = (@limit * (@page - 1)) + @outset
+    end
+
+    private def assign_last
+      @last = [(@count.to_f / @limit).ceil, 1].max.to_i
+      @last = @vars[:max_pages].to_i if @vars[:max_pages]? && @last > @vars[:max_pages]
+    end
+  end
+
   class Page(T)
     include SharedMethods
 
@@ -78,33 +105,6 @@ module Paginator
 
     private def check_overflow
       raise OverflowError.new("Page #{@page} exceeds last page (#{@last})") if @page > @last
-    end
-  end
-
-  module SharedMethods
-    private def assign_vars(default, vars)
-      @vars = default.merge(vars.reject { |k, v| default.has_key?(k) && (v.nil? || v.empty?) })
-    end
-
-    private def assign_and_check(name_min)
-      name_min.each do |name, min|
-        value = @vars[name]
-        raise ArgumentError.new("#{name} must be >= #{min}") unless value.responds_to?(:to_i) && value.to_i >= min
-        instance_variable_set("@#{name}", value.to_i)
-      end
-    end
-
-    private def assign_limit
-      assign_and_check({limit: 1})
-    end
-
-    private def assign_offset
-      @offset = (@limit * (@page - 1)) + @outset
-    end
-
-    private def assign_last
-      @last = [(@count.to_f / @limit).ceil, 1].max.to_i
-      @last = @vars[:max_pages].to_i if @vars[:max_pages]? && @last > @vars[:max_pages]
     end
   end
 

@@ -1,32 +1,31 @@
 module Paginator
   module ViewHelper
     # Constants for template tokens
-    PAGE_TOKEN = "__page__"
+    PAGE_TOKEN  = "__page__"
     LABEL_TOKEN = "__page_label__"
 
     # Enhanced navigation builder with Pagy-like features
-    def nav(page : Paginator::Page, 
+    def nav(page : Paginator::Page,
             id : String? = nil,
-            nav_aria_label : String = "Pages", 
+            nav_aria_label : String = "Pages",
             **vars)
-      
       link = build_link_proc(page, **vars)
-      
+
       String.build do |html|
         # Nav container
         html << %(<nav#{id ? " id=\"#{id}\"" : ""} class="pagination-nav" aria-label="#{nav_aria_label}">)
-        
+
         # Previous link
         build_prev_link(html, page, link)
-        
+
         # Pages list
         html << %(<ul class="pagination-list">)
         build_page_links(html, page, link)
         html << "</ul>"
-        
+
         # Next link
         build_next_link(html, page, link)
-        
+
         html << "</nav>"
       end
     end
@@ -35,19 +34,18 @@ module Paginator
     def info(page : Paginator::Page,
              item_name : String = "items",
              i18n_key : String? = nil)
-      
       message = case
-      when page.count.zero?
-        t("pagy.info.empty", item_name: item_name)
-      when page.pages == 1
-        t("pagy.info.single_page", count: page.count, item_name: item_name)
-      else
-        t("pagy.info.multiple_pages",
-          from: page.from,
-          to: page.to,
-          count: page.count,
-          item_name: item_name)
-      end
+                when page.count.zero?
+                  t("pagy.info.empty", item_name: item_name)
+                when page.pages == 1
+                  t("pagy.info.single_page", count: page.count, item_name: item_name)
+                else
+                  t("pagy.info.multiple_pages",
+                    from: page.from,
+                    to: page.to,
+                    count: page.count,
+                    item_name: item_name)
+                end
 
       %(<span class="pagination-info">#{message}</span>)
     end
@@ -55,7 +53,7 @@ module Paginator
     private def nav_link(p, text : String, left : String, right : String, classes : String? = nil, aria : Hash(Symbol, String)? = nil)
       class_attr = classes ? %( class="#{classes}") : ""
       aria_attr = build_aria_attributes(aria)
-  
+
       if p.is_a?(Symbol)
         %(<span#{class_attr}#{aria_attr}>#{text}</span>)
       else
@@ -66,11 +64,12 @@ module Paginator
     private def build_link_proc(page, **vars)
       base_url = "#{request_path}?page=#{PAGE_TOKEN}"
       left, right = base_url.split(PAGE_TOKEN, 2)
-  
-      ->(p : Int32 | Symbol, text : String, classes : String? = nil, aria : Hash(Symbol, String)? = nil) do
+
+      ->(p : Int32 | Symbol, text : String, classes : String | Nil, aria : Hash(Symbol, String) | Nil) do
         nav_link(p, text, left, right, classes, aria)
       end
     end
+
     private def build_page_links(html, page, link)
       page.series.each do |p|
         html << "<li>"
