@@ -61,7 +61,7 @@ module Paginator
 
   class Page(T)
     include SharedMethods
-
+    getter per_page : Int32
     getter items : Array(T)
     getter count : Int64
     getter last : Int32
@@ -73,7 +73,7 @@ module Paginator
     getter limit : Int32
     getter outset : Int32
 
-    def initialize(@items : Array(T), @count : Int64, **vars)
+    def initialize(@items : Array(T), @page : Int32, @per_page : Int32, @count : Int64, **vars)
       @last = 1
       @offset = 0
       @vars = DEFAULT.dup
