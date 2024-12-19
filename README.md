@@ -32,17 +32,18 @@ Then, run shards install.
 - To enable pagination on a model, include the Paginator module in your model class:
 
 ```crystal
+# src/models/post.cr
 require "cry_paginator"
-
-class Article
+class Post
   include Paginator
 
   def self.table_name
-    "articles"
+    "posts"
   end
-  # def sef.db
-  #    DB
-  # end
+
+  property id : Int32
+  property title : String
+  property content : String
 end
 ```
 
@@ -69,6 +70,7 @@ paginator.page_window(7) # Example output: [1, :gap, 5, 6, 7, 8, :gap, 20]
 Override the defaults globally in your app:
 
 ```crystal
+
 Paginator.config = {
   per_page: 20,
   window_gap: true,
@@ -106,29 +108,26 @@ The controller retrieves paginated data from the database using the Paginator sh
 _Example: ArticlesController (Kemal Framework)_
 
 ```crystal
-require "./models/article" # Assuming Article includes Paginator
+# src/controllers/posts_controller.cr
+class PostsController < Kemal::Handler
+  include Paginator::Backend
+  include Paginator::ViewHelper
 
+  def call(context)
+    page = context.params.query["page"]? || "1"
+    per_page = context.params.query["per_page"]? || "10"
 
-class ArticlesController
-    include Paginator::ViewHelper
+    posts_query = Post.all # Your query builder
+    page_instance, items = paginator(posts_query,
+      page_param: :page,
+      per_page: per_page.to_i,
+      order_by: "created_at DESC"
+    )
 
-    @@db : DB::Database = Article.db # Add the database type annotation on Application.cr or in the controller
-    @articles : Array(Article)?
-    @paginator : Paginator::Page(Article)
-
-  def initialize
-    @paginator = Article.paginate(Article.db, 1, 10)
+    render "src/views/posts/index.ecr", context
   end
-
-  def index(env)
-     page = env.params.query["page"]?.try(&.to_i) || 1
-     per_page = env.params.query["per_page"]?.try(&.to_i) || 10
-     paginator = Article.paginate(Article.db, page, per_page)
-     @articles = @paginator.not_nil!.items
-
-     render "src/views/articles/index.ecr"
-   end
 end
+
 ```
 
 ## Integration in Views
@@ -138,8 +137,17 @@ Use the data provided by the controller to render paginated content and navigati
 _Example Usage in a Kemal View (index.ecr)_
 
 ```crystal
-<%= pagination_info(paginator, "articles") if paginator %>
-<%= pagination_nav(paginator) if paginator %>
+<div class="posts">
+  <% items.each do |post| %>
+    <article>
+      <h2><%= post.title %></h2>
+      <p><%= post.content %></p>
+    </article>
+  <% end %>
+</div>
+
+<%= nav(page_instance, nav_aria_label: "Posts navigation") %>
+<%= info(page_instance, item_name: "posts") %>
 
 ```
 
@@ -147,15 +155,15 @@ _Example Output_
 Navigation Links
 
 ```crystal
-<nav class="pagination-nav" aria-label="Pagination">
-  <a href="?page=1" class="pagination-link">Previous</a>
-  <a href="?page=1" class="pagination-link">1</a>
-  <a href="?page=2" class="pagination-link current" aria-current="page">2</a>
-  <a href="?page=3" class="pagination-link">3</a>
-  <a href="?page=4" class="pagination-link">4</a>
-  <a href="?page=5" class="pagination-link">5</a>
-  <a href="?page=7" class="pagination-link">Next</a>
-</nav>
+# <nav class="pagination-nav" aria-label="Pagination">
+#   <a href="?page=1" class="pagination-link">Previous</a>
+#   <a href="?page=1" class="pagination-link">1</a>
+#   <a href="?page=2" class="pagination-link current" aria-current="page">2</a>
+#   <a href="?page=3" class="pagination-link">3</a>
+#   <a href="?page=4" class="pagination-link">4</a>
+#   <a href="?page=5" class="pagination-link">5</a>
+#   <a href="?page=7" class="pagination-link">Next</a>
+# </nav>
 ```
 
 **Info**
@@ -171,36 +179,51 @@ Navigation Links
 Add some simple CSS to style the pagination links.
 
 ```css
+/* public/css/pagination.css */
 .pagination-nav {
   display: flex;
   gap: 0.5rem;
   list-style: none;
-  margin-bottom: 13rem;
+  margin: 2rem 0;
+}
+
+.pagination-list {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .pagination-link {
   padding: 0.5rem 1rem;
 
-  color: #1eaedb;
-
   text-decoration: none;
 }
-.pagination-link:hover {
-  text-decoration: underline;
-}
-.is-current {
+
+.pagination-link.is-current {
   font-weight: bold;
 }
 
-.is-disabled {
-  color: #aaa;
-  pointer-events: none;
+.pagination-ellipsis {
+  padding: 0.5rem;
 }
 
-.pagination-gap {
-  display: inline-block;
-  padding: 0.5rem;
-  color: #666;
+.pagination-previous,
+.pagination-next {
+  padding: 0.5rem 1rem;
+
+  text-decoration: none;
+}
+
+.pagination-previous[disabled],
+.pagination-next[disabled] {
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  display: block;
+  margin-top: 1rem;
 }
 ```
 
