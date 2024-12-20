@@ -88,7 +88,8 @@ module Paginator
         case p
         when Int32
           classes = p == page.page ? "pagination-link is-current" : "pagination-link"
-          aria = {current: "page"} if p == page.page
+          # Convert NamedTuple to Hash
+          aria = p == page.page ? {"current" => "page"} : nil
           html << link.call(p, p.to_s, classes, aria)
         when :gap
           html << link.call(:gap, "...", "pagination-ellipsis", {"disabled" => "true"})
