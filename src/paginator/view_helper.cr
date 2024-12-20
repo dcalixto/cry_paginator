@@ -81,21 +81,21 @@ module Paginator
         nav_link(p, text, left, right, classes, aria)
       end
     end
-
     private def build_page_links(html, page, link)
       page.series.each do |p|
         html << "<li>"
         case p
         when Int32
           classes = p == page.page ? "pagination-link is-current" : "pagination-link"
-          # Convert NamedTuple to Hash
-          aria = p == page.page ? {"current" => "page"} : nil
+          # Use symbols as hash keys instead of strings
+          aria = p == page.page ? {:current => "page"} : nil
           html << link.call(p, p.to_s, classes, aria)
         when :gap
-          html << link.call(:gap, "...", "pagination-ellipsis", {"disabled" => "true"})
+          html << link.call(:gap, "...", "pagination-ellipsis", {:disabled => "true"})
         end
         html << "</li>"
       end
+    end
     end
 
     private def build_prev_link(html, page, link)
