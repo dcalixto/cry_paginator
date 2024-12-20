@@ -88,17 +88,18 @@ module Paginator
       (@count.to_f / per_page).ceil.to_i
     end
 
-    def initialize(@items : Array(T), @current_page : Int32, @page : Int32, @per_page : Int32, @count : Int64, **vars)
-      @last = 1
-      @offset = 0
+    def initialize(@items : Array(T), @count : Int64, **vars)
       @vars = DEFAULT.dup
-      @prev = nil
-      @next = nil
-      @page = [vars[:page]?.try(&.to_i) || 1, total_pages].min
-      @limit = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
-      @outset = vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
       assign_vars(DEFAULT, vars)
-      assign_and_check({page: 1, outset: 0})
+
+      # Get page from vars or params and ensure it's an integer
+      requested_page = vars[:page]?.try(&.to_i) || 1
+      @current_page = requested_page
+      @page = requested_page
+      @per_page = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
+      @limit = @per_page
+      @outset = vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
+
       assign_limit
       assign_offset
       assign_last

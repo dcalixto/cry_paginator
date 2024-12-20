@@ -81,11 +81,11 @@ module Paginator
         nav_link(p, text, left, right, classes, aria)
       end
     end
-
     private def build_page_links(html, page, link)
       puts "Pagination Debug:"
 
-      puts "Current page: #{page.page}"
+      #puts "Current page: #{page.page}"
+      puts "Current page: #{page.current_page}" 
       puts "Total items: #{page.count}"
       puts "Items per page: #{page.per_page}"
       puts "Total pages: #{page.total_pages}"
@@ -95,14 +95,15 @@ module Paginator
         html << "<li>"
         case p
         when Int32
-          classes = p == page.page ? "pagination-link is-current" : "pagination-link"
-          aria = p == page.page ? {:current => "page"} : nil
+          classes = p == page.current_page ? "pagination-link is-current" : "pagination-link"
+          aria = p == page.current_page ? {:current => "page"} : nil
           html << link.call(p, p.to_s, classes, aria)
         when :gap
           html << link.call(:gap, "...", "pagination-ellipsis", {:disabled => "true"})
         end
         html << "</li>"
       end
+    end
     end
 
     private def build_prev_link(html, page, link)
