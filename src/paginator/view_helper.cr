@@ -104,6 +104,7 @@ module Paginator
         html << "</li>"
       end
     end
+
     private def build_prev_link(html, page, link)
       if prev_page = page.prev_page
         html << link.call(prev_page, "Previous", "pagination-previous", nil)
@@ -118,7 +119,6 @@ module Paginator
       else
         html << %(<span class="pagination-next" disabled>Next</span>)
       end
-    end
     end
 
     private def build_aria_attributes(aria : Hash(Symbol, String)?) : String
