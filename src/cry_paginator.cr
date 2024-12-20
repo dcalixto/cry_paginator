@@ -113,36 +113,30 @@ module Paginator
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
-      window_size = 7.to_i # Explicit integer conversion
+      visible_pages = 7.to_i # We want exactly 7 visible numbers
 
-      # Calculate the current window position with explicit integer types
-      if @page <= window_size
-        # Show first window_size pages
-        (1..window_size).each { |p| series << p.to_i if p <= @last }
+      # First page is always shown
+      series << 1.to_i
 
-        if @last > window_size
-          series << :gap
-          series << @last.to_i
-        end
-      elsif @page > @last - window_size
-        # Show first page and gap
-        series << 1
+      # Calculate the middle range
+      if @last <= visible_pages
+        # Show all pages if total is 7 or less
+        (2..@last).each { |p| series << p.to_i }
+      elsif @page <= visible_pages - 2
+        # Near start: show first 7 pages
+        (2..visible_pages).each { |p| series << p.to_i }
         series << :gap
-
-        # Show last window_size pages with explicit integer conversion
-        start = (@last - window_size + 1).to_i
-        (@last - window_size + 1..@last).each { |p| series << p.to_i }
+        series << @last.to_i
+      elsif @page > @last - (visible_pages - 2)
+        # Near end: show last 7 pages
+        series << :gap
+        (@last - visible_pages + 2..@last).each { |p| series << p.to_i }
       else
-        # Show first page and gap
-        series << 1
+        # In middle: show current page with 3 pages on each side
         series << :gap
-
-        # Show centered window around current page with integer math
-        start_page = (@page - (window_size / 2)).to_i
-        end_page = (start_page + window_size - 1).to_i
+        start_page = (@page - 3).to_i
+        end_page = (@page + 3).to_i
         (start_page..end_page).each { |p| series << p.to_i }
-
-        # Show gap and last page
         series << :gap
         series << @last.to_i
       end
