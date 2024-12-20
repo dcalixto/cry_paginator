@@ -113,38 +113,38 @@ module Paginator
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
-      window_size = 7 # Fixed window size for consistent display
+      window_size = 7.to_i # Explicit integer conversion
 
-      # Calculate the current window position
-      if @page <= window_size # When near the start
+      # Calculate the current window position with explicit integer types
+      if @page <= window_size
         # Show first window_size pages
-        (1..window_size).each { |p| series << p if p <= @last }
+        (1..window_size).each { |p| series << p.to_i if p <= @last }
 
-        # Add gap and last page if needed
         if @last > window_size
           series << :gap
-          series << @last
+          series << @last.to_i
         end
-      elsif @page > @last - window_size # When near the end
+      elsif @page > @last - window_size
         # Show first page and gap
         series << 1
         series << :gap
 
-        # Show last window_size pages
-        (@last - window_size + 1..@last).each { |p| series << p }
-      else # When in the middle
+        # Show last window_size pages with explicit integer conversion
+        start = (@last - window_size + 1).to_i
+        (@last - window_size + 1..@last).each { |p| series << p.to_i }
+      else
         # Show first page and gap
         series << 1
         series << :gap
 
-        # Show centered window around current page
-        start_page = @page - (window_size / 2)
-        end_page = start_page + window_size - 1
-        (start_page..end_page).each { |p| series << p }
+        # Show centered window around current page with integer math
+        start_page = (@page - (window_size / 2)).to_i
+        end_page = (start_page + window_size - 1).to_i
+        (start_page..end_page).each { |p| series << p.to_i }
 
         # Show gap and last page
         series << :gap
-        series << @last
+        series << @last.to_i
       end
 
       series
