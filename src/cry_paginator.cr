@@ -113,33 +113,20 @@ module Paginator
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
-      visible_pages = 7.to_i # We want exactly 7 visible numbers
+      visible_pages = size # Use the provided size
 
-      # First page is always shown
-      series << 1.to_i
+      # Calculate range based on current page and visible pages
+      start_page = [@page - (visible_pages // 2), 1].max
+      end_page = [start_page + visible_pages - 1, @last].min
 
-      # Calculate the middle range
-      if @last <= visible_pages
-        # Show all pages if total is 7 or less
-        (2..@last).each { |p| series << p.to_i }
-      elsif @page <= visible_pages - 2
-        # Near start: show first 7 pages
-        (2..visible_pages).each { |p| series << p.to_i }
-        series << :gap
-        series << @last.to_i
-      elsif @page > @last - (visible_pages - 2)
-        # Near end: show last 7 pages
-        series << :gap
-        (@last - visible_pages + 2..@last).each { |p| series << p.to_i }
-      else
-        # In middle: show current page with 3 pages on each side
-        series << :gap
-        start_page = (@page - 3).to_i
-        end_page = (@page + 3).to_i
-        (start_page..end_page).each { |p| series << p.to_i }
-        series << :gap
-        series << @last.to_i
-      end
+      # Add previous "..." if needed
+      series << :gap if start_page > 2
+
+      # Add page numbers
+      (start_page..end_page).each { |p| series << p }
+
+      # Add next "..." if needed
+      series << :gap if end_page < @last - 1
 
       series
     end
