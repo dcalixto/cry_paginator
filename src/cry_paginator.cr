@@ -113,20 +113,26 @@ module Paginator
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
-      visible_pages = size # Use the provided size
 
-      # Calculate range based on current page and visible pages
-      start_page = [@page - (visible_pages // 2), 1].max
-      end_page = [start_page + visible_pages - 1, @last].min
+      # Always show first page
+      series << 1
 
-      # Add previous "..." if needed
-      series << :gap if start_page > 2
+      # Calculate window around current page
+      window_size = (size - 2) // 2 # Subtract 2 to account for first/last pages
+      window_start = [@page - window_size, 2].max
+      window_end = [@page + window_size, @last - 1].min
 
-      # Add page numbers
-      (start_page..end_page).each { |p| series << p }
+      # Add gap after 1 if needed
+      series << :gap if window_start > 2
 
-      # Add next "..." if needed
-      series << :gap if end_page < @last - 1
+      # Add window pages
+      (window_start..window_end).each { |p| series << p }
+
+      # Add gap before last page if needed
+      series << :gap if window_end < @last - 1
+
+      # Always show last page if there is more than one page
+      series << @last if @last > 1
 
       series
     end
