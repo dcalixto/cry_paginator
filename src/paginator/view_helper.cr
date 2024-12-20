@@ -81,6 +81,7 @@ module Paginator
         nav_link(p, text, left, right, classes, aria)
       end
     end
+
     private def build_page_links(html, page, link)
       page.series.each do |p|
         html << "<li>"
@@ -95,7 +96,6 @@ module Paginator
         end
         html << "</li>"
       end
-    end
     end
 
     private def build_prev_link(html, page, link)
