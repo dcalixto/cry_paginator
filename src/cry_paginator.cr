@@ -113,38 +113,41 @@ module Paginator
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
+
+      # For small total page counts, show all pages
       if size >= @last
         series.concat((1..@last).to_a)
-      else
-        # Ensure integer division and type consistency
-        window_size = (size - 2).to_i
-        half_window = (window_size / 2).to_i
+        return series
+      end
 
-        # Calculate window bounds with explicit integer types
-        current_window_start = if @page <= window_size
-                                 1
-                               elsif @page > @last - window_size
-                                 (@last - window_size).to_i
-                               else
-                                 (@page - half_window).to_i
-                               end.to_i
+      # Calculate visible window
+      visible_count = size - 2 # Reserve space for first/last page markers
+      half_visible = (visible_count / 2).to_i
 
-        current_window_end = (current_window_start + window_size - 1).to_i
+      # Determine window position
+      window_start = if @page <= half_visible + 1
+                       1
+                     elsif @page > @last - half_visible
+                       @last - visible_count + 1
+                     else
+                       @page - half_visible
+                     end.to_i
 
-        # Add first page if needed
-        if current_window_start > 1
-          series << 1
-          series << :gap if current_window_start > 2
-        end
+      window_end = (window_start + visible_count - 1).to_i
 
-        # Add window pages with explicit integer range
-        (current_window_start..current_window_end).each { |p| series << p.to_i }
+      # Build the series with proper window positioning
+      if window_start > 1
+        series << 1
+        series << :gap if window_start > 2
+      end
 
-        # Add last page if needed
-        if current_window_end < @last
-          series << :gap if current_window_end < @last - 1
-          series << @last
-        end
+      (window_start..window_end).each do |p|
+        series << p if p > 0 && p <= @last
+      end
+
+      if window_end < @last
+        series << :gap if window_end < @last - 1
+        series << @last
       end
 
       series
