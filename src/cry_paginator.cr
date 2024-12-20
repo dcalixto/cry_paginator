@@ -85,8 +85,7 @@ module Paginator
     end
 
     def total_pages : Int32
-      total_items = your_query.count
-      (total_items.to_f / per_page).ceil.to_i
+      (@count.to_f / per_page).ceil.to_i
     end
 
     def initialize(@items : Array(T), @current_page : Int32, @page : Int32, @per_page : Int32, @count : Int64, **vars)
