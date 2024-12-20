@@ -116,7 +116,15 @@ module Paginator
       @next = @page == @last ? nil : @page + 1
     end
 
-    # Rest of the methods...
+    def prev_page : Int32?
+      return nil if @page <= 1
+      @page - 1
+    end
+
+    def next_page : Int32?
+      return nil if @page >= @last
+      @page + 1
+    end
   end
 
   class OverflowError < Exception; end
