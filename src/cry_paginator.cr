@@ -117,16 +117,24 @@ module Paginator
         series.concat((1..@last).to_a)
       else
         left = ((size - 1) / 2.0).floor
-        start = if @page <= left
-                  1
-                elsif @page > (@last - size + left)
-                  @last - size + 1
-                else
-                  @page - left
-                end
+        right = size - left - 1
 
-        (start.to_i...(start.to_i + size)).each { |p| series << p }
+        # Calculate the window based on current page position
+        if @page <= left
+          start = 1
+        elsif @page > (@last - right)
+          start = @last - size + 1
+        else
+          start = @page - left
+        end
 
+        # Ensure start is never less than 1
+        start = [start.to_i, 1].max
+
+        # Add the page numbers
+        (start...[start + size].min(@last + 1)).each { |p| series << p }
+
+        # Add endpoints and gaps if enabled
         if @vars[:ends] && size >= 7
           series[0] = 1
           series[1] = :gap unless series[1] == 2
