@@ -83,12 +83,13 @@ module Paginator
     end
 
     private def build_page_links(html, page, link)
-      Log.debug { "Pagination Debug:" }
-      Log.debug { "Current page: #{page.page}" }
-      Log.debug { "Total items: #{page.count}" }
-      Log.debug { "Items per page: #{page.per_page}" }
-      Log.debug { "Total pages: #{page.total_pages}" }
-      Log.debug { "Page series: #{page.series.inspect}" }
+      puts "Pagination Debug:"
+
+      puts "Current page: #{page.page}"
+      puts "Total items: #{page.count}"
+      puts "Items per page: #{page.per_page}"
+      puts "Total pages: #{page.total_pages}"
+      puts "Page series: #{page.series.inspect}"
 
       page.series.each do |p|
         html << "<li>"
