@@ -113,42 +113,37 @@ module Paginator
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
-      total_window = size.to_i
-
-      # Handle small page counts
-      if total_window >= @last
-        return (1..@last).to_a.map(&.as(Int32 | Symbol))
-      end
+      window_size = 7 # Fixed window size for consistent display
 
       # Calculate the current window position
-      current = @page.to_i
-      half = (total_window / 2).to_i
-      left_size = half
-      right_size = total_window - half - 1
+      if @page <= window_size # When near the start
+        # Show first window_size pages
+        (1..window_size).each { |p| series << p if p <= @last }
 
-      # Determine start and end points
-      start_page = if current <= left_size
-                     1
-                   elsif current > (@last - right_size)
-                     @last - total_window + 1
-                   else
-                     current - left_size
-                   end.to_i
-
-      end_page = Math.min(start_page + total_window - 1, @last).to_i
-
-      # Build the series
-      if start_page > 1
+        # Add gap and last page if needed
+        if @last > window_size
+          series << :gap
+          series << @last
+        end
+      elsif @page > @last - window_size # When near the end
+        # Show first page and gap
         series << 1
-        series << :gap if start_page > 2
-      end
+        series << :gap
 
-      (start_page..end_page).each do |page|
-        series << page
-      end
+        # Show last window_size pages
+        (@last - window_size + 1..@last).each { |p| series << p }
+      else # When in the middle
+        # Show first page and gap
+        series << 1
+        series << :gap
 
-      if end_page < @last
-        series << :gap if end_page < @last - 1
+        # Show centered window around current page
+        start_page = @page - (window_size / 2)
+        end_page = start_page + window_size - 1
+        (start_page..end_page).each { |p| series << p }
+
+        # Show gap and last page
+        series << :gap
         series << @last
       end
 
