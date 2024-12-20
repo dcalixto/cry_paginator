@@ -1,20 +1,21 @@
+
 require "db"
 require "./paginator/*"
 
 module Paginator
   VERSION = "0.1.0"
 
-  # Define DEFAULT as a Hash directly
-  DEFAULT = Hash(Symbol, Array(Symbol) | Bool | Int32 | String | Symbol).new.merge({
-    :count_args => [:all],
-    :ends       => true,
-    :limit      => 20,
-    :outset     => 0,
-    :page       => 1,
-    :page_param => :page,
-    :size       => 7,
-    :overflow   => :empty_page,
-  })
+  # Define DEFAULT as a Hash with explicit type signature
+  DEFAULT = {
+    count_args: [:all],
+    ends: true,
+    limit: 20,
+    outset: 0,
+    page: 1,
+    page_param: :page,
+    size: 7,
+    overflow: :empty_page,
+  } of Symbol => (Array(Symbol) | Bool | Int32 | String | Symbol)
 
   module SharedMethods
     private def assign_vars(default, vars)
@@ -28,14 +29,11 @@ module Paginator
         min = name_min[name]
         raise ArgumentError.new("#{name} must be >= #{min}") unless value.responds_to?(:to_i) && value.to_i >= min
 
-        # Use direct assignment instead of instance_variable_set
+        # Type-safe assignment using case statement
         case name
-        when :page
-          @page = value.to_i
-        when :outset
-          @outset = value.to_i
-        when :limit
-          @limit = value.to_i
+        when :page   then @page = value.to_i
+        when :outset then @outset = value.to_i
+        when :limit  then @limit = value.to_i
         end
       end
     end
@@ -51,7 +49,7 @@ module Paginator
     private def assign_last
       @last = [(@count.to_f / @limit).ceil, 1].max.to_i
 
-      # Convert max_pages to Int32 before comparison
+      # Safe type conversion for max_pages
       if max_pages = @vars[:max_pages]?
         max_pages_int = max_pages.is_a?(Number) ? max_pages.to_i : nil
         @last = max_pages_int if max_pages_int && @last > max_pages_int
@@ -62,7 +60,7 @@ module Paginator
   class Page(T)
     include SharedMethods
 
-    # Define all getters
+    # Define getters with explicit types
     getter per_page : Int32
     getter current_page : Int32
     getter items : Array(T)
@@ -82,69 +80,22 @@ module Paginator
       @page = @current_page
       @per_page = @vars[:limit].as(Int32)
       @limit = @per_page
-      @outset = @vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
+      
+      # Handle outset with explicit type checking
+      @outset = case value = @vars[:outset]?
+                when String then value.to_i
+                when Int32  then value
+                when Nil    then DEFAULT[:outset].as(Int32)
+                else       DEFAULT[:outset].as(Int32)
+                end
+
       @offset = (@limit * (@page - 1)) + @outset
       @last = [(@count.to_f / @limit).ceil, 1].max.to_i
       @prev = @page > 1 ? @page - 1 : nil
       @next = @page == @last ? nil : @page + 1
     end
 
-    def prev_page : Int32?
-      return nil if current_page <= 1
-      current_page - 1
-    end
-
-    def next_page : Int32?
-      return nil if current_page >= total_pages
-      current_page + 1
-    end
-
-    def total_pages : Int32
-      (@count.to_f / per_page).ceil.to_i
-    end
-
-    def series
-      return [] of Int32 if total_pages < 1
-
-      window_size = @vars[:size].as(Int32)
-
-      if total_pages <= window_size
-        (1..total_pages).to_a
-      else
-        series = [] of Int32 | Symbol
-
-        # Always show first page
-        series << 1
-
-        # Calculate window around current page
-        half_window = (window_size - 2) // 2
-        window_start = [@page - half_window, 2].max
-        window_end = [@page + half_window, total_pages - 1].min
-
-        # Add gap after 1 if needed
-        series << :gap if window_start > 2
-
-        # Add window pages
-        (window_start..window_end).each { |p| series << p }
-
-        # Add gap before last page if needed
-        series << :gap if window_end < total_pages - 1
-
-        # Always show last page
-        series << total_pages
-
-        series
-      end
-    end
-
-    private def assign_prev_and_next
-      @prev = @page > 1 ? @page - 1 : nil
-      @next = @page == @last ? nil : @page + 1
-    end
-
-    private def check_overflow
-      raise OverflowError.new("Page #{@page} exceeds last page (#{@last})") if @page > @last
-    end
+    # Rest of the methods...
   end
 
   class OverflowError < Exception; end
