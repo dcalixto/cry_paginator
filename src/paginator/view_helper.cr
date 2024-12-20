@@ -81,11 +81,12 @@ module Paginator
         nav_link(p, text, left, right, classes, aria)
       end
     end
+
     private def build_page_links(html, page, link)
       puts "Pagination Debug:"
 
-      #puts "Current page: #{page.page}"
-      puts "Current page: #{page.current_page}" 
+      # puts "Current page: #{page.page}"
+      puts "Current page: #{page.current_page}"
       puts "Total items: #{page.count}"
       puts "Items per page: #{page.per_page}"
       puts "Total pages: #{page.total_pages}"
@@ -103,7 +104,6 @@ module Paginator
         end
         html << "</li>"
       end
-    end
     end
 
     private def build_prev_link(html, page, link)
