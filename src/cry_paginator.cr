@@ -116,28 +116,31 @@ module Paginator
       if size >= @last
         series.concat((1..@last).to_a)
       else
-        # Calculate the sliding window
-        window_size = size - 2 # Account for first/last page
+        # Ensure integer division and type consistency
+        window_size = (size - 2).to_i
+        half_window = (window_size / 2).to_i
+
+        # Calculate window bounds with explicit integer types
         current_window_start = if @page <= window_size
                                  1
                                elsif @page > @last - window_size
-                                 @last - window_size
+                                 (@last - window_size).to_i
                                else
-                                 @page - (window_size / 2)
-                               end
+                                 (@page - half_window).to_i
+                               end.to_i
 
-        current_window_end = current_window_start + window_size - 1
+        current_window_end = (current_window_start + window_size - 1).to_i
 
-        # Add first page if not in window
+        # Add first page if needed
         if current_window_start > 1
           series << 1
           series << :gap if current_window_start > 2
         end
 
-        # Add window pages
-        (current_window_start..current_window_end).each { |p| series << p }
+        # Add window pages with explicit integer range
+        (current_window_start..current_window_end).each { |p| series << p.to_i }
 
-        # Add last page if not in window
+        # Add last page if needed
         if current_window_end < @last
           series << :gap if current_window_end < @last - 1
           series << @last
