@@ -125,6 +125,10 @@ module Paginator
       return nil if @page >= @last
       @page + 1
     end
+
+    def total_pages : Int32
+      @last
+    end
   end
 
   class OverflowError < Exception; end
