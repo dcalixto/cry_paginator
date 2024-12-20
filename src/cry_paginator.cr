@@ -1,4 +1,3 @@
-
 require "db"
 require "./paginator/*"
 
@@ -6,16 +5,17 @@ module Paginator
   VERSION = "0.1.0"
 
   # Define DEFAULT as a Hash with explicit type signature
-  DEFAULT = {
+  # Define DEFAULT as a Hash with proper type restriction syntax
+  DEFAULT = Hash(Symbol, Array(Symbol) | Bool | Int32 | String | Symbol).new.merge({
     count_args: [:all],
-    ends: true,
-    limit: 20,
-    outset: 0,
-    page: 1,
+    ends:       true,
+    limit:      20,
+    outset:     0,
+    page:       1,
     page_param: :page,
-    size: 7,
-    overflow: :empty_page,
-  } of Symbol => (Array(Symbol) | Bool | Int32 | String | Symbol)
+    size:       7,
+    overflow:   :empty_page,
+  })
 
   module SharedMethods
     private def assign_vars(default, vars)
@@ -80,13 +80,13 @@ module Paginator
       @page = @current_page
       @per_page = @vars[:limit].as(Int32)
       @limit = @per_page
-      
+
       # Handle outset with explicit type checking
       @outset = case value = @vars[:outset]?
                 when String then value.to_i
                 when Int32  then value
                 when Nil    then DEFAULT[:outset].as(Int32)
-                else       DEFAULT[:outset].as(Int32)
+                else             DEFAULT[:outset].as(Int32)
                 end
 
       @offset = (@limit * (@page - 1)) + @outset
