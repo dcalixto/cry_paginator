@@ -60,7 +60,7 @@ module Paginator
   end
 
   class Page(T)
-    include SharedMethods
+    # Define all getters
     getter per_page : Int32
     getter current_page : Int32
     getter items : Array(T)
@@ -74,6 +74,26 @@ module Paginator
     getter limit : Int32
     getter outset : Int32
 
+    def initialize(@items : Array(T), @count : Int64, **vars)
+      # Initialize all required instance variables
+      @current_page = vars[:page]?.try(&.to_i) || 1
+      @page = @current_page
+      @per_page = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
+      @limit = @per_page
+      @outset = vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
+      @offset = (@limit * (@page - 1)) + @outset
+      @last = [(@count.to_f / @limit).ceil, 1].max.to_i
+      @vars = DEFAULT.dup
+      @prev = @page > 1 ? @page - 1 : nil
+      @next = @page == @last ? nil : @page + 1
+
+      assign_vars(DEFAULT, vars)
+      assign_limit
+      assign_offset
+      assign_last
+      check_overflow
+    end
+
     def prev_page : Int32?
       return nil if current_page <= 1
       current_page - 1
@@ -86,28 +106,6 @@ module Paginator
 
     def total_pages : Int32
       (@count.to_f / per_page).ceil.to_i
-    end
-
-    def initialize(@items : Array(T), @count : Int64, **vars)
-      @vars = DEFAULT.dup
-      assign_vars(DEFAULT, vars)
-
-      # Get page from vars or params and ensure it's an integer
-      requested_page = vars[:page]?.try(&.to_i) || 1
-      @current_page = requested_page
-      @page = requested_page
-      @per_page = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
-      @limit = @per_page
-      @outset = vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
-
-      assign_limit
-      assign_offset
-      assign_last
-      check_overflow
-
-      @from = [@offset - @outset + 1, @count].min
-      @to = [@offset - @outset + @limit, @count].min
-      assign_prev_and_next
     end
 
     def series
