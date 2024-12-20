@@ -85,7 +85,8 @@ module Paginator
     end
 
     def total_pages : Int32
-      (count / per_page.to_i64).ceil.to_i
+      total_items = your_query.count
+      (total_items.to_f / per_page).ceil.to_i
     end
 
     def initialize(@items : Array(T), @current_page : Int32, @page : Int32, @per_page : Int32, @count : Int64, **vars)
@@ -94,7 +95,7 @@ module Paginator
       @vars = DEFAULT.dup
       @prev = nil
       @next = nil
-      @page = vars[:page]?.try(&.to_i) || 1
+      @page = [vars[:page]?.try(&.to_i) || 1, total_pages].min
       @limit = vars[:limit]?.try(&.to_i) || DEFAULT[:limit].as(Int32)
       @outset = vars[:outset]?.try(&.to_i) || DEFAULT[:outset].as(Int32)
       assign_vars(DEFAULT, vars)
@@ -109,32 +110,38 @@ module Paginator
       assign_prev_and_next
     end
 
-    def series(size : Int32 = @vars[:size].as(Int32))
-      return [] of Int32 | Symbol if size.zero?
+    def series
+      return [] of Int32 if total_pages < 1
 
-      series = [] of Int32 | Symbol
+      window_size = @vars[:size].as(Int32)
 
-      # Always show first page
-      series << 1
+      if total_pages <= window_size
+        (1..total_pages).to_a
+      else
+        series = [] of Int32 | Symbol
 
-      # Calculate window around current page
-      window_size = (size - 2) // 2 # Subtract 2 to account for first/last pages
-      window_start = [@page - window_size, 2].max
-      window_end = [@page + window_size, @last - 1].min
+        # Always show first page
+        series << 1
 
-      # Add gap after 1 if needed
-      series << :gap if window_start > 2
+        # Calculate window around current page
+        half_window = (window_size - 2) // 2
+        window_start = [@page - half_window, 2].max
+        window_end = [@page + half_window, total_pages - 1].min
 
-      # Add window pages
-      (window_start..window_end).each { |p| series << p }
+        # Add gap after 1 if needed
+        series << :gap if window_start > 2
 
-      # Add gap before last page if needed
-      series << :gap if window_end < @last - 1
+        # Add window pages
+        (window_start..window_end).each { |p| series << p }
 
-      # Always show last page if there is more than one page
-      series << @last if @last > 1
+        # Add gap before last page if needed
+        series << :gap if window_end < total_pages - 1
 
-      series
+        # Always show last page
+        series << total_pages
+
+        series
+      end
     end
 
     private def assign_prev_and_next

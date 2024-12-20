@@ -81,14 +81,19 @@ module Paginator
         nav_link(p, text, left, right, classes, aria)
       end
     end
-
     private def build_page_links(html, page, link)
+      Log.debug { "Pagination Debug:" }
+      Log.debug { "Current page: #{page.page}" }
+      Log.debug { "Total items: #{page.count}" }
+      Log.debug { "Items per page: #{page.per_page}" }
+      Log.debug { "Total pages: #{page.pages}" }
+      Log.debug { "Page series: #{page.series.inspect}" }
+
       page.series.each do |p|
         html << "<li>"
         case p
         when Int32
           classes = p == page.page ? "pagination-link is-current" : "pagination-link"
-          # Use symbols as hash keys instead of strings
           aria = p == page.page ? {:current => "page"} : nil
           html << link.call(p, p.to_s, classes, aria)
         when :gap
@@ -96,6 +101,7 @@ module Paginator
         end
         html << "</li>"
       end
+    end
     end
 
     private def build_prev_link(html, page, link)
