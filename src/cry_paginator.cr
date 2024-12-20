@@ -116,40 +116,31 @@ module Paginator
       if size >= @last
         series.concat((1..@last).to_a)
       else
-        # Calculate window size and position
-        half = (size / 2).floor.to_i
-        left_size = half
-        right_size = size - half - 1
+        # Calculate the sliding window
+        window_size = size - 2 # Account for first/last page
+        current_window_start = if @page <= window_size
+                                 1
+                               elsif @page > @last - window_size
+                                 @last - window_size
+                               else
+                                 @page - (window_size / 2)
+                               end
 
-        # Calculate the start and end of the window
-        window_start = @page - left_size
-        window_end = @page + right_size
+        current_window_end = current_window_start + window_size - 1
 
-        # Adjust window if it goes out of bounds
-        if window_start < 1
-          window_end = window_end + (1 - window_start)
-          window_start = 1
+        # Add first page if not in window
+        if current_window_start > 1
+          series << 1
+          series << :gap if current_window_start > 2
         end
 
-        if window_end > @last
-          window_start = [1, window_start - (window_end - @last)].max
-          window_end = @last
-        end
+        # Add window pages
+        (current_window_start..current_window_end).each { |p| series << p }
 
-        # Add pages to series
-        (window_start..window_end).each { |p| series << p }
-
-        # Add endpoints and gaps
-        if @vars[:ends] && size >= 7
-          if window_start > 1
-            series.unshift(:gap) if window_start > 2
-            series.unshift(1)
-          end
-
-          if window_end < @last
-            series.push(:gap) if window_end < @last - 1
-            series.push(@last)
-          end
+        # Add last page if not in window
+        if current_window_end < @last
+          series << :gap if current_window_end < @last - 1
+          series << @last
         end
       end
 
