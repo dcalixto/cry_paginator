@@ -129,6 +129,40 @@ module Paginator
     def total_pages : Int32
       @last
     end
+
+    def series : Array(Int32 | Symbol)
+      return [] of Int32 if total_pages < 1
+
+      window_size = @vars[:size].as(Int32)
+
+      if total_pages <= window_size
+        (1..total_pages).to_a
+      else
+        series = [] of Int32 | Symbol
+
+        # Always show first page
+        series << 1
+
+        # Calculate window around current page
+        half_window = (window_size - 2) // 2
+        window_start = [@page - half_window, 2].max
+        window_end = [@page + half_window, total_pages - 1].min
+
+        # Add gap after 1 if needed
+        series << :gap if window_start > 2
+
+        # Add window pages
+        (window_start..window_end).each { |p| series << p }
+
+        # Add gap before last page if needed
+        series << :gap if window_end < total_pages - 1
+
+        # Always show last page
+        series << total_pages
+
+        series
+      end
+    end
   end
 
   class OverflowError < Exception; end
