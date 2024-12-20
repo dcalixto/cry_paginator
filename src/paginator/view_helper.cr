@@ -87,7 +87,7 @@ module Paginator
       Log.debug { "Current page: #{page.page}" }
       Log.debug { "Total items: #{page.count}" }
       Log.debug { "Items per page: #{page.per_page}" }
-      Log.debug { "Total pages: #{page.pages}" }
+      Log.debug { "Total pages: #{page.total_pages}" }
       Log.debug { "Page series: #{page.series.inspect}" }
 
       page.series.each do |p|
