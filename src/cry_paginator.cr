@@ -113,40 +113,42 @@ module Paginator
       return [] of Int32 | Symbol if size.zero?
 
       series = [] of Int32 | Symbol
+      total_window = size.to_i
 
-      # For small total page counts, show all pages
-      if size >= @last
-        series.concat((1..@last).to_a)
-        return series
+      # Handle small page counts
+      if total_window >= @last
+        return (1..@last).to_a.map(&.as(Int32 | Symbol))
       end
 
-      # Calculate visible window
-      visible_count = size - 2 # Reserve space for first/last page markers
-      half_visible = (visible_count / 2).to_i
+      # Calculate the current window position
+      current = @page.to_i
+      half = (total_window / 2).to_i
+      left_size = half
+      right_size = total_window - half - 1
 
-      # Determine window position
-      window_start = if @page <= half_visible + 1
-                       1
-                     elsif @page > @last - half_visible
-                       @last - visible_count + 1
-                     else
-                       @page - half_visible
-                     end.to_i
+      # Determine start and end points
+      start_page = if current <= left_size
+                     1
+                   elsif current > (@last - right_size)
+                     @last - total_window + 1
+                   else
+                     current - left_size
+                   end.to_i
 
-      window_end = (window_start + visible_count - 1).to_i
+      end_page = Math.min(start_page + total_window - 1, @last).to_i
 
-      # Build the series with proper window positioning
-      if window_start > 1
+      # Build the series
+      if start_page > 1
         series << 1
-        series << :gap if window_start > 2
+        series << :gap if start_page > 2
       end
 
-      (window_start..window_end).each do |p|
-        series << p if p > 0 && p <= @last
+      (start_page..end_page).each do |page|
+        series << page
       end
 
-      if window_end < @last
-        series << :gap if window_end < @last - 1
+      if end_page < @last
+        series << :gap if end_page < @last - 1
         series << @last
       end
 
