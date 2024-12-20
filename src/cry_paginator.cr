@@ -4,18 +4,39 @@ require "./paginator/*"
 module Paginator
   VERSION = "0.1.0"
 
-  # Define DEFAULT as a Hash with explicit type signature
-  # Define DEFAULT as a Hash with proper type restriction syntax
-  DEFAULT = Hash(Symbol, Array(Symbol) | Bool | Int32 | String | Symbol).new.merge({
-    count_args: [:all],
-    ends:       true,
-    limit:      20,
-    outset:     0,
-    page:       1,
-    page_param: :page,
-    size:       7,
-    overflow:   :empty_page,
-  })
+  # First, define the DEFAULT hash correctly
+  DEFAULT = Hash(Symbol, Array(Symbol) | Bool | Int32 | String | Symbol).new
+  DEFAULT[:count_args] = [:all]
+  DEFAULT[:ends] = true
+  DEFAULT[:limit] = 20
+  DEFAULT[:outset] = 0
+  DEFAULT[:page] = 1
+  DEFAULT[:page_param] = :page
+  DEFAULT[:size] = 7
+  DEFAULT[:overflow] = :empty_page
+
+  # In the Post.paginate method:
+  def self.paginate(page : Int32 = 1, per_page : Int32 = 12, order : String = "created_at DESC")
+    offset = (page - 1) * per_page
+    items = db.query_all(
+      "SELECT * FROM posts ORDER BY #{order} LIMIT ? OFFSET ?",
+      args: [per_page, offset],
+      as: Post
+    )
+    count = db.scalar("SELECT COUNT(*) FROM posts").as(Int64)
+
+    # Create vars hash with correct type
+    vars = Hash(Symbol, Array(Symbol) | Bool | Int32 | String | Symbol).new
+    vars[:page] = page
+    vars[:limit] = per_page
+    vars[:order_by] = order
+
+    Paginator::Page(Post).new(
+      items: items,
+      count: count,
+      vars: vars
+    )
+  end
 
   module SharedMethods
     private def assign_vars(default, vars)
