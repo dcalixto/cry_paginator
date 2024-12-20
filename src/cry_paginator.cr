@@ -132,7 +132,7 @@ module Paginator
         start = [start.to_i, 1].max
 
         # Add the page numbers
-        (start...[start + size].min(@last + 1)).each { |p| series << p }
+        (start...([start + size, @last + 1].min)).each { |p| series << p }
 
         # Add endpoints and gaps if enabled
         if @vars[:ends] && size >= 7
