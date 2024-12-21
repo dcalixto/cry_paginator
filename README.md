@@ -40,13 +40,6 @@ class Post
   include Paginator
   include Paginator::Model
 
-  def self.table_name
-    "posts"
-  end
-
-  property id : Int32
-  property title : String
-  property content : String
 end
 ```
 
@@ -112,22 +105,23 @@ _Example: ArticlesController (Kemal Framework)_
 
 ```crystal
 # src/controllers/posts_controller.cr
-class PostsController < Kemal::Handler
+class PostsController
   include Paginator::Backend
   include Paginator::ViewHelper
 
-  def call(context)
-    page = context.params.query["page"]? || "1"
-    per_page = context.params.query["per_page"]? || "10"
+  def index
+    page = (env.params.query["page"]? || "1").to_i
+    per_page = 12
 
-    posts_query = Post.all # Your query builder
-    page_instance, items = paginator(posts_query,
-      page_param: :page,
-      per_page: per_page.to_i,
-      order_by: "created_at DESC"
+    paginator = Post.paginate(
+      page: page,
+      per_page: per_page,
+      order: "created_at DESC"
     )
 
-    render "src/views/posts/index.ecr", context
+    posts = paginator.items
+
+    render "src/views/posts/index.ecr"
   end
 end
 
@@ -141,7 +135,7 @@ _Example Usage in a Kemal View (index.ecr)_
 
 ```crystal
 <div class="posts">
-  <% items.each do |post| %>
+  <% posts.each do |post| %>
     <article>
       <h2><%= post.title %></h2>
       <p><%= post.content %></p>
@@ -149,8 +143,9 @@ _Example Usage in a Kemal View (index.ecr)_
   <% end %>
 </div>
 
-<%= nav(page_instance, nav_aria_label: "Posts navigation") %>
-<%= info(page_instance, item_name: "posts") %>
+<%= pagination_info(paginator, "posts") if paginator %>
+<%= pagination_nav(paginator) if posts %>
+
 
 ```
 
@@ -163,8 +158,8 @@ Navigation Links
 #   <a href="?page=1" class="pagination-link">1</a>
 #   <a href="?page=2" class="pagination-link current" aria-current="page">2</a>
 #   <a href="?page=3" class="pagination-link">3</a>
-#   <a href="?page=4" class="pagination-link">4</a>
-#   <a href="?page=5" class="pagination-link">5</a>
+#   <a href="?page=#" class="pagination-link">....</a>
+#   <a href="?page=518" class="pagination-link">18</a>
 #   <a href="?page=7" class="pagination-link">Next</a>
 # </nav>
 ```
@@ -187,46 +182,54 @@ Add some simple CSS to style the pagination links.
   display: flex;
   gap: 0.5rem;
   list-style: none;
-  margin: 2rem 0;
+  margin-bottom: 13rem;
+}
+.pagination ul li {
+  list-style: none;
+}
+.pagination ul > li {
+  display: inline-block;
+  /* You can also add some margins here to make it look prettier */
+}
+.pagination-link {
+  text-decoration: none;
+}
+.pagination-link:hover {
+  text-decoration: underline;
+}
+.is-current {
+  font-weight: bold;
+}
+
+.is-disabled {
+  color: #aaa;
+  pointer-events: none;
+}
+
+.pagination-gap {
+  display: inline-block;
+  padding: 0.5rem;
+  color: #666;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .pagination-list {
   display: flex;
-  gap: 0.5rem;
   list-style: none;
   margin: 0;
   padding: 0;
+  gap: 0.25rem;
 }
 
-.pagination-link {
-  padding: 0.5rem 1rem;
-
-  text-decoration: none;
-}
-
-.pagination-link.is-current {
-  font-weight: bold;
-}
-
-.pagination-ellipsis {
-  padding: 0.5rem;
-}
-
-.pagination-previous,
-.pagination-next {
-  padding: 0.5rem 1rem;
-
-  text-decoration: none;
-}
-
-.pagination-previous[disabled],
-.pagination-next[disabled] {
-  cursor: not-allowed;
-}
-
-.pagination-info {
-  display: block;
-  margin-top: 1rem;
+.pagination-link.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 ```
 
