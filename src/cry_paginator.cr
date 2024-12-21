@@ -131,14 +131,15 @@ module Paginator
     end
 
     def series : Array(Int32 | Symbol)
-      return [] of Int32 if total_pages < 1
+      return [] of (Int32 | Symbol) if total_pages < 1
 
       window_size = @vars[:size].as(Int32)
 
       if total_pages <= window_size
-        (1..total_pages).to_a
+        # Convert range to array with explicit type
+        (1..total_pages).map { |n| n.as(Int32 | Symbol) }
       else
-        series = [] of Int32 | Symbol
+        series = [] of (Int32 | Symbol)
 
         # Always show first page
         series << 1
