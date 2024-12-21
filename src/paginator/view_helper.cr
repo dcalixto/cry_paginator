@@ -4,11 +4,27 @@ module Paginator
     PAGE_TOKEN  = "__page__"
     LABEL_TOKEN = "__page_label__"
 
-    # Enhanced navigation builder with Pagy-like features
-    def nav(page : Paginator::Page,
-            id : String? = nil,
-            nav_aria_label : String = "Pages",
-            **vars)
+    def pagination_info(paginator : Paginator::Page, item_name : String)
+      # Calculate from and to values
+      per_page = paginator.per_page
+      current_page = paginator.page
+      from = (current_page - 1) * per_page + 1
+      to = [from + per_page - 1, paginator.count].min
+
+      html = String.build do |html|
+        if paginator.count == 0
+          html << "No #{item_name}"
+        else
+          html << "Showing #{from}-#{to} of #{paginator.count} #{item_name}"
+        end
+      end
+      html
+    end
+
+    def pagination_nav(page : Paginator::Page,
+                       id : String? = nil,
+                       nav_aria_label : String = "Pages",
+                       **vars)
       link = build_link_proc(page, **vars)
 
       String.build do |html|
@@ -30,24 +46,13 @@ module Paginator
       end
     end
 
-    # Enhanced info display with i18n support
-    def info(page : Paginator::Page,
-             item_name : String = "items",
-             i18n_key : String? = nil)
-      message = case
-                when page.count.zero?
-                  t("pagy.info.empty", item_name: item_name)
-                when page.pages == 1
-                  t("pagy.info.single_page", count: page.count, item_name: item_name)
-                else
-                  t("pagy.info.multiple_pages",
-                    from: page.from,
-                    to: page.to,
-                    count: page.count,
-                    item_name: item_name)
-                end
+    private def build_link_proc(page, **vars)
+      base_url = "#{request_path}?page=#{PAGE_TOKEN}"
+      left, right = base_url.split(PAGE_TOKEN, 2)
 
-      %(<span class="pagination-info">#{message}</span>)
+      ->(p : Int32 | Symbol, text : String, classes : String | Nil, aria : Hash(Symbol, String)?) {
+        nav_link(p, text, left, right, classes, aria)
+      }
     end
 
     def pagination_link(page : Int32?, text : String, current : Bool = false, disabled : Bool = false)

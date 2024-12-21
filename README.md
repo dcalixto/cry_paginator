@@ -35,7 +35,10 @@ Then, run shards install.
 # src/models/post.cr
 require "cry_paginator"
 class Post
+
+  include DB::Serializable
   include Paginator
+  include Paginator::Model
 
   def self.table_name
     "posts"
